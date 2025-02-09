@@ -101,10 +101,10 @@ const capturePayment = async (req, res) => {
         let product = await Product.findById(item.productId);
 
         if (!product) {
-          return res.status(404).json({
-            success: false,
-            message: `Not enough stock for this product ${product.title}`,
-          });
+          return res.redirect(
+            302,
+            `${process.env.CLIENT_BASE_URL}/shop/fail?error=Insufficient stock`
+          );
         }
 
         product.totalStock -= item.quantity;
@@ -117,24 +117,28 @@ const capturePayment = async (req, res) => {
 
       await order.save();
 
-      return res.status(200).json({
-        success: true,
-        message: "Payment confirmed and order updated",
-        order,
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-      });
-    }
+      const orderData = {
+        id: order._id,
+        date: order.orderDate.toISOString(),
+        total: order.totalAmount,
+      };
 
-    res.status(200).json({
-      success: true,
-      message: "Payment validation failed",
-    });
+      return res.redirect(
+        302,
+        `${process.env.CLIENT_BASE_URL}/shop/successful?orderId=${orderData.id}&date=${orderData.date}&total=${orderData.total}`
+      );
+    } else {
+      return res.redirect(
+        302,
+        `${process.env.CLIENT_BASE_URL}/shop/fail?error=Payment validation failed`
+      );
+    }
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    return res.redirect(
+      302,
+      `${process.env.CLIENT_BASE_URL}/shop/fail?error=Internal Server Error`
+    );
   }
 };
 

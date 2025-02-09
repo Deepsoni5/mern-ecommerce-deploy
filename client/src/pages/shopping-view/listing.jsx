@@ -20,6 +20,7 @@ import { useSearchParams } from "react-router-dom";
 import ProductDetailsDialog from "@/components/shopping-view/product-details";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
 import { toast } from "@/hooks/use-toast";
+import NoProductsPage from "./NoProductFound";
 function ShoppingListing() {
   const dispatch = useDispatch();
   const { productList, productDetails } = useSelector(
@@ -174,18 +175,20 @@ function ShoppingListing() {
             </DropdownMenu>
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
-          {productList && productList.length > 0
-            ? productList.map((productItem) => (
-                <ShoppingProductTile
-                  handleGetProductDetails={handleGetProductDetails}
-                  key={productItem._id}
-                  product={productItem}
-                  handleAddtoCart={handleAddtoCart}
-                />
-              ))
-            : null}
-        </div>
+        {productList && productList.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+            {productList.map((productItem) => (
+              <ShoppingProductTile
+                handleGetProductDetails={handleGetProductDetails}
+                key={productItem._id}
+                product={productItem}
+                handleAddtoCart={handleAddtoCart}
+              />
+            ))}
+          </div>
+        ) : (
+          <NoProductsPage /> // This will now take full width
+        )}
       </div>
       <ProductDetailsDialog
         open={openDetailsDialog}

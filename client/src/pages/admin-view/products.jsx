@@ -106,8 +106,6 @@ function AdminProducts() {
     dispatch(fetchAllProducts());
   }, [dispatch]);
 
-  console.log(formData);
-
   return (
     <>
       <div className="mb-5 w-full flex justify-end">
@@ -159,7 +157,7 @@ function AdminProducts() {
               setFormData={setFormData}
               onSubmit={onSubmit}
               buttonText={currentEditedId !== null ? "Edit" : "Add"}
-              isBtnDisabled={!isFormValid()}
+              isBtnDisabled={!isFormValid() || !imageFile}
             />
           </div>
         </SheetContent>

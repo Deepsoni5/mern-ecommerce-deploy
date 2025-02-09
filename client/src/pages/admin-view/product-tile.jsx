@@ -11,11 +11,11 @@ function AdminProductTile({
   return (
     <Card className="w-full max-w-sm mx-auto">
       <div>
-        <div className="relative">
+        <div className="relative h-60 overflow-hidden">
           <img
             src={product?.image}
             alt={product?.title}
-            className="w-full h-[300px] object-cover rounded-t-lg p-2"
+            className="w-full h-full object-cover object-center transition-transform duration-300 ease-in-out hover:scale-105"
           />
         </div>
         <CardContent>
@@ -26,10 +26,10 @@ function AdminProductTile({
                 product?.salePrice > 0 ? "line-through" : ""
               } text-lg font-semibold text-primary`}
             >
-              ${product?.price}
+              ₹{product?.price}
             </span>
             {product?.salePrice > 0 ? (
-              <span className="text-lg font-bold">${product?.salePrice}</span>
+              <span className="text-lg font-bold">₹{product?.salePrice}</span>
             ) : null}
           </div>
         </CardContent>

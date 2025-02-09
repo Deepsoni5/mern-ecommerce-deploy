@@ -20,6 +20,8 @@ import { useEffect } from "react";
 import { checkAuth } from "./store/auth-slice";
 import { Skeleton } from "@/components/ui/skeleton";
 import SearchProducts from "./pages/shopping-view/search";
+import SuccessOrder from "./pages/shopping-view/successful-order";
+import FailOrder from "./pages/shopping-view/fail-order";
 
 function App() {
   const { user, isAuthenticated, isLoading } = useSelector(
@@ -84,6 +86,8 @@ function App() {
           <Route path="checkout" element={<ShoppingCheckout />} />
           <Route path="account" element={<ShoppingAccount />} />
           <Route path="search" element={<SearchProducts />} />
+          <Route path="successful" element={<SuccessOrder />} />
+          <Route path="fail" element={<FailOrder />} />
         </Route>
         <Route path="*" element={<NotFound />} />
         <Route path="/unauth-page" element={<UnAuthPage />} />

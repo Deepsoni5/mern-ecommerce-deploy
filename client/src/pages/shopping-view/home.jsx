@@ -1,7 +1,9 @@
 import {
   Airplay,
   BabyIcon,
+  ChevronLeft,
   ChevronLeftIcon,
+  ChevronRight,
   ChevronRightIcon,
   CloudLightning,
   Heater,
@@ -13,9 +15,7 @@ import {
   WashingMachine,
   WatchIcon,
 } from "lucide-react";
-import bannerOne from "../../assets/banner-1.webp";
-import bannerTwo from "../../assets/banner-2.webp";
-import bannerThree from "../../assets/banner-3.webp";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
@@ -31,6 +31,9 @@ import ShoppingProductTile from "@/components/shopping-view/product-tile";
 import ProductDetailsDialog from "@/components/shopping-view/product-details";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
 import { getFeatureImages } from "@/store/common-slice";
+import { AnimatePresence, motion } from "framer-motion";
+import { WhyChooseUs } from "./WhyChooseUs";
+import { Testimonials } from "./Testimonials";
 
 const categoriesWithIcon = [
   { id: "men", label: "Buds", icon: ShirtIcon },
@@ -40,6 +43,57 @@ const categoriesWithIcon = [
   { id: "footwear", label: "Footwear", icon: UmbrellaIcon },
 ];
 
+const categoriesWithImage = [
+  {
+    id: "buds",
+    label: "Buds",
+    imageUrl:
+      "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+  },
+  {
+    id: "cover",
+    label: "Cover",
+    imageUrl:
+      "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+  },
+  {
+    id: "kids",
+    label: "Kids",
+    imageUrl:
+      "https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+  },
+  {
+    id: "accessories",
+    label: "Accessories",
+    imageUrl:
+      "https://images.unsplash.com/photo-1631729371254-42c2892f0e6e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+  },
+  {
+    id: "footwear",
+    label: "Footwear",
+    imageUrl:
+      "https://images.unsplash.com/photo-1549298916-b41d501d3772?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+  },
+  {
+    id: "electronics",
+    label: "Electronics",
+    imageUrl:
+      "https://images.unsplash.com/photo-1498049794561-7780e7231661?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+  },
+  {
+    id: "watches",
+    label: "Watches",
+    imageUrl:
+      "https://images.unsplash.com/photo-1524592094714-0f0654e20314?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+  },
+  {
+    id: "sports",
+    label: "Sports",
+    imageUrl:
+      "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+  },
+];
+
 const brandsWithIcon = [
   { id: "nike", label: "Nike", icon: Shirt },
   { id: "adidas", label: "Adidas", icon: WashingMachine },
@@ -47,6 +101,81 @@ const brandsWithIcon = [
   { id: "levi", label: "Levi's", icon: Airplay },
   { id: "zara", label: "Zara", icon: Images },
   { id: "h&m", label: "H&M", icon: Heater },
+];
+
+const brandsWithLogo = [
+  {
+    id: "apple",
+    name: "Apple",
+    logoUrl:
+      "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
+  },
+  {
+    id: "samsung",
+    name: "Samsung",
+    logoUrl:
+      "https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg",
+  },
+  {
+    id: "realme",
+    name: "Realme",
+    logoUrl:
+      "https://upload.wikimedia.org/wikipedia/commons/4/49/Realme_logo.svg",
+  },
+  {
+    id: "redmi",
+    name: "Redmi",
+    logoUrl:
+      "https://upload.wikimedia.org/wikipedia/commons/4/4a/Redmi_logo.svg",
+  },
+  {
+    id: "noise",
+    name: "Noise",
+    logoUrl:
+      "https://upload.wikimedia.org/wikipedia/commons/e/e1/Noise_logo.svg",
+  },
+  {
+    id: "oneplus",
+    name: "OnePlus",
+    logoUrl:
+      "https://upload.wikimedia.org/wikipedia/commons/f/f1/OnePlus_logo.svg",
+  },
+  {
+    id: "sony",
+    name: "Sony",
+    logoUrl:
+      "https://upload.wikimedia.org/wikipedia/commons/c/c9/Sony_logo.svg",
+  },
+  {
+    id: "lg",
+    name: "LG",
+    logoUrl:
+      "https://upload.wikimedia.org/wikipedia/commons/b/bf/LG_logo_%282015%29.svg",
+  },
+  {
+    id: "mi",
+    name: "Mi",
+    logoUrl:
+      "https://upload.wikimedia.org/wikipedia/commons/2/29/Xiaomi_logo.svg",
+  },
+  {
+    id: "vivo",
+    name: "Vivo",
+    logoUrl:
+      "https://upload.wikimedia.org/wikipedia/commons/d/d7/Vivo_logo_2019.svg",
+  },
+  {
+    id: "oppo",
+    name: "OPPO",
+    logoUrl:
+      "https://upload.wikimedia.org/wikipedia/commons/9/9a/OPPO_logo.svg",
+  },
+  {
+    id: "boat",
+    name: "boAt",
+    logoUrl:
+      "https://upload.wikimedia.org/wikipedia/commons/7/76/BoAt_logo.svg",
+  },
 ];
 
 function ShoppingHome() {
@@ -61,6 +190,72 @@ function ShoppingHome() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const [startIndex, setStartIndex] = useState(0);
+  const [visibleCategoryCount, setVisibleCategoryCount] = useState(5);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640) {
+        setVisibleCategoryCount(3);
+      } else if (window.innerWidth < 1024) {
+        setVisibleCategoryCount(4);
+      } else {
+        setVisibleCategoryCount(5);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const nextCategory = () => {
+    setStartIndex((prevIndex) =>
+      Math.min(prevIndex + 1, categoriesWithImage.length - visibleCategoryCount)
+    );
+  };
+
+  const prevCategory = () => {
+    setStartIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+  };
+
+  const showLeftArrow = startIndex > 0;
+  const showRightArrow =
+    startIndex < categoriesWithImage.length - visibleCategoryCount;
+
+  const [brandStartIndex, setBrandStartIndex] = useState(0);
+  const [visibleBrandCount, setVisibleBrandCount] = useState(5);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640) {
+        setVisibleBrandCount(3);
+      } else if (window.innerWidth < 1024) {
+        setVisibleBrandCount(4);
+      } else {
+        setVisibleBrandCount(5);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const nextBrand = () => {
+    setBrandStartIndex((prevIndex) =>
+      Math.min(prevIndex + 1, brandsWithLogo.length - visibleBrandCount)
+    );
+  };
+
+  const prevBrand = () => {
+    setBrandStartIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+  };
+
+  const showBrandLeftArrow = brandStartIndex > 0;
+  const showBrandRightArrow =
+    brandStartIndex < brandsWithLogo.length - visibleBrandCount;
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -124,16 +319,21 @@ function ShoppingHome() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="relative w-full h-[600px] overflow-hidden">
+      <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] lg:aspect-[3/1] overflow-hidden">
         {featureImageList && featureImageList.length > 0
           ? featureImageList.map((slide, index) => (
-              <img
-                src={slide?.image}
+              <div
                 key={index}
                 className={`${
                   index === currentSlide ? "opacity-100" : "opacity-0"
-                } absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000`}
-              />
+                } absolute inset-0 transition-opacity duration-1000 ease-in-out`}
+              >
+                <img
+                  src={slide?.image || "/placeholder.svg"}
+                  alt={`Slide ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
             ))
           : null}
         <Button
@@ -146,9 +346,9 @@ function ShoppingHome() {
                 featureImageList.length
             )
           }
-          className="absolute rounded-xl  top-1/2 left-4 transform -translate-y-1/2 bg-white/80"
+          className="absolute rounded-full top-1/2 left-4 transform -translate-y-1/2 bg-white/80 hover:bg-white"
         >
-          <ChevronLeftIcon className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4 sm:w-6 sm:h-6" />
         </Button>
         <Button
           variant="outline"
@@ -158,10 +358,21 @@ function ShoppingHome() {
               (prevSlide) => (prevSlide + 1) % featureImageList.length
             )
           }
-          className="absolute rounded-xl top-1/2 right-4 transform -translate-y-1/2 bg-white/80"
+          className="absolute rounded-full top-1/2 right-4 transform -translate-y-1/2 bg-white/80 hover:bg-white"
         >
-          <ChevronRightIcon className="w-4 h-4" />
+          <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6" />
         </Button>
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          {featureImageList.map((_, index) => (
+            <button
+              key={index}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                index === currentSlide ? "bg-white scale-125" : "bg-white/50"
+              }`}
+              onClick={() => setCurrentSlide(index)}
+            />
+          ))}
+        </div>
       </div>
 
       <section className="py-12 bg-gray-50">
@@ -169,22 +380,70 @@ function ShoppingHome() {
           <h2 className="text-3xl font-bold text-center mb-8">
             Shop by category
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {" "}
-            {categoriesWithIcon.map((categoryItem) => (
-              <Card
-                key={categoryItem.id}
-                onClick={() =>
-                  handleNavigateToListingPage(categoryItem, "category")
-                }
-                className="cursor-pointer hover:shadow-lg transition-shadow"
+          <div className="relative">
+            {showLeftArrow && (
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg hover:bg-gray-100 rounded-full w-8 h-8"
+                onClick={prevCategory}
               >
-                <CardContent className="flex flex-col items-center justify-center p-6">
-                  <categoryItem.icon className="w-12 h-12 mb-4 text-primary" />
-                  <span className="font-bold">{categoryItem.label}</span>
-                </CardContent>
-              </Card>
-            ))}
+                <ChevronLeft className="h-6 w-6" />
+              </Button>
+            )}
+            {showRightArrow && (
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg hover:bg-gray-100 rounded-full w-8 h-8"
+                onClick={nextCategory}
+              >
+                <ChevronRight className="h-6 w-6" />
+              </Button>
+            )}
+            <div className="overflow-hidden">
+              <motion.div
+                className="flex gap-6"
+                initial={false}
+                animate={{
+                  x: `calc(-${startIndex * (100 / visibleCategoryCount)}% - ${
+                    startIndex * 1.5
+                  }rem)`,
+                }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              >
+                {categoriesWithImage.map((category, index) => (
+                  <motion.div
+                    key={category.id}
+                    className="w-[calc((100%-4rem)/3)] sm:w-[calc((100%-6rem)/4)] lg:w-[calc((100%-6rem)/5)] flex-shrink-0"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div
+                      onClick={() =>
+                        handleNavigateToListingPage(category, "category")
+                      }
+                      className="cursor-pointer group"
+                    >
+                      <div className="relative mb-3 bg-gray-100 rounded-2xl overflow-hidden">
+                        <div className="aspect-[4/3] overflow-hidden">
+                          <img
+                            src={category.imageUrl || "/placeholder.svg"}
+                            alt={category.label}
+                            className="w-full h-full object-cover transition duration-300 group-hover:scale-110"
+                          />
+                        </div>
+                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      </div>
+                      <h3 className="text-center text-sm sm:text-base lg:text-lg font-medium text-gray-900 group-hover:text-primary transition-colors duration-300">
+                        {category.label}
+                      </h3>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -192,22 +451,75 @@ function ShoppingHome() {
       <section className="py-12 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-8">Shop by Brand</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {brandsWithIcon.map((brandItem) => (
-              <Card
-                key={brandItem.id}
-                onClick={() => handleNavigateToListingPage(brandItem, "brand")}
-                className="cursor-pointer hover:shadow-lg transition-shadow"
+          <div className="relative">
+            {showBrandLeftArrow && (
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg hover:bg-gray-100 rounded-full w-8 h-8"
+                onClick={prevBrand}
               >
-                <CardContent className="flex flex-col items-center justify-center p-6">
-                  <brandItem.icon className="w-12 h-12 mb-4 text-primary" />
-                  <span className="font-bold">{brandItem.label}</span>
-                </CardContent>
-              </Card>
-            ))}
+                <ChevronLeft className="h-6 w-6" />
+              </Button>
+            )}
+            {showBrandRightArrow && (
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg hover:bg-gray-100 rounded-full w-8 h-8"
+                onClick={nextBrand}
+              >
+                <ChevronRight className="h-6 w-6" />
+              </Button>
+            )}
+            <div className="overflow-hidden">
+              <motion.div
+                className="flex gap-6"
+                initial={false}
+                animate={{
+                  x: `calc(-${brandStartIndex * (100 / visibleBrandCount)}% - ${
+                    brandStartIndex * 1.5
+                  }rem)`,
+                }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              >
+                {brandsWithLogo.map((brand, index) => (
+                  <motion.div
+                    key={brand.id}
+                    className="w-[calc((100%-4rem)/3)] sm:w-[calc((100%-6rem)/4)] lg:w-[calc((100%-6rem)/5)] flex-shrink-0"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div
+                      onClick={() =>
+                        handleNavigateToListingPage(brand, "brand")
+                      }
+                      className="cursor-pointer group"
+                    >
+                      <div className="relative mb-3 bg-white rounded-2xl overflow-hidden shadow-md">
+                        <div className="aspect-[4/3] overflow-hidden flex items-center justify-center p-4">
+                          <img
+                            src={brand.logoUrl || "/placeholder.svg"}
+                            alt={brand.name}
+                            className="w-full h-full object-contain transition duration-300 group-hover:scale-110"
+                          />
+                        </div>
+                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      </div>
+                      <h3 className="text-center text-sm sm:text-base lg:text-lg font-medium text-gray-900 group-hover:text-primary transition-colors duration-300">
+                        {brand.name}
+                      </h3>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
           </div>
         </div>
       </section>
+
+      <WhyChooseUs />
 
       <section className="py-12">
         <div className="container mx-auto px-4">
@@ -228,6 +540,8 @@ function ShoppingHome() {
           </div>
         </div>
       </section>
+
+      <Testimonials />
       <ProductDetailsDialog
         open={openDetailsDialog}
         setOpen={setOpenDetailsDialog}
