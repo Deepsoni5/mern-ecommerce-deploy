@@ -185,7 +185,7 @@ function ShoppingHome() {
       if (window.innerWidth < 640) {
         setVisibleCategoryCount(2);
       } else if (window.innerWidth < 1024) {
-        setVisibleCategoryCount(4);
+        setVisibleCategoryCount(3);
       } else {
         setVisibleCategoryCount(5);
       }
@@ -218,7 +218,7 @@ function ShoppingHome() {
       if (window.innerWidth < 640) {
         setVisibleBrandCount(2);
       } else if (window.innerWidth < 1024) {
-        setVisibleBrandCount(4);
+        setVisibleBrandCount(3);
       } else {
         setVisibleBrandCount(5);
       }
@@ -302,14 +302,6 @@ function ShoppingHome() {
   useEffect(() => {
     dispatch(getFeatureImages());
   }, [dispatch]);
-
-  console.log({
-    startIndex,
-    totalItems: categoriesWithImage.length,
-    visibleCategoryCount,
-    showRightArrow:
-      startIndex < categoriesWithImage.length - visibleCategoryCount,
-  });
 
   return (
     <div className="flex flex-col min-h-screen">
