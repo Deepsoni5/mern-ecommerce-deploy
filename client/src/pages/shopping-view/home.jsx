@@ -45,52 +45,39 @@ const categoriesWithIcon = [
 
 const categoriesWithImage = [
   {
-    id: "buds",
-    label: "Buds",
-    imageUrl:
-      "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    id: "airbuds",
+    label: "Air Buds",
+    imageUrl: "/cat_buds.jpg",
   },
   {
     id: "cover",
     label: "Cover",
-    imageUrl:
-      "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    imageUrl: "/cat_cover.jpg",
   },
   {
-    id: "kids",
-    label: "Kids",
-    imageUrl:
-      "https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    id: "mobile",
+    label: "Mobile",
+    imageUrl: "/cat_mobile.jpg",
   },
   {
-    id: "accessories",
-    label: "Accessories",
-    imageUrl:
-      "https://images.unsplash.com/photo-1631729371254-42c2892f0e6e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    id: "watch",
+    label: "Watch",
+    imageUrl: "/cat_watch.jpg",
   },
   {
-    id: "footwear",
-    label: "Footwear",
-    imageUrl:
-      "https://images.unsplash.com/photo-1549298916-b41d501d3772?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    id: "tablet",
+    label: "Tablet",
+    imageUrl: "/cat_tablet.jpg",
   },
   {
-    id: "electronics",
-    label: "Electronics",
-    imageUrl:
-      "https://images.unsplash.com/photo-1498049794561-7780e7231661?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    id: "temperedglass",
+    label: "Tempered Glass",
+    imageUrl: "/cat_glass.jpg",
   },
   {
-    id: "watches",
-    label: "Watches",
-    imageUrl:
-      "https://images.unsplash.com/photo-1524592094714-0f0654e20314?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-  },
-  {
-    id: "sports",
-    label: "Sports",
-    imageUrl:
-      "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    id: "speaker",
+    label: "Speaker",
+    imageUrl: "/cat_speaker.jpg",
   },
 ];
 
@@ -120,37 +107,36 @@ const brandsWithLogo = [
     id: "realme",
     name: "Realme",
     logoUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/4/49/Realme_logo.svg",
+      "https://upload.wikimedia.org/wikipedia/commons/a/a2/Realme_logo.svg",
   },
   {
     id: "redmi",
     name: "Redmi",
     logoUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/4/4a/Redmi_logo.svg",
+      "https://upload.wikimedia.org/wikipedia/commons/7/7c/Redmi_Logo.png",
   },
   {
     id: "noise",
     name: "Noise",
-    logoUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/e/e1/Noise_logo.svg",
+    logoUrl: "/b_noise.png",
   },
   {
     id: "oneplus",
     name: "OnePlus",
     logoUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/f/f1/OnePlus_logo.svg",
+      "https://upload.wikimedia.org/wikipedia/commons/a/a4/OnePlus_logo.png",
   },
   {
     id: "sony",
     name: "Sony",
     logoUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/c/c9/Sony_logo.svg",
+      "https://upload.wikimedia.org/wikipedia/commons/c/ca/Sony_logo.svg",
   },
   {
     id: "lg",
     name: "LG",
     logoUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/b/bf/LG_logo_%282015%29.svg",
+      "https://upload.wikimedia.org/wikipedia/commons/7/7c/Flag_of_LG.svg",
   },
   {
     id: "mi",
@@ -162,19 +148,19 @@ const brandsWithLogo = [
     id: "vivo",
     name: "Vivo",
     logoUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/d/d7/Vivo_logo_2019.svg",
+      "https://upload.wikimedia.org/wikipedia/commons/8/8c/Vivo_New_Logo_2019.png",
   },
   {
     id: "oppo",
     name: "OPPO",
     logoUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/9/9a/OPPO_logo.svg",
+      "https://upload.wikimedia.org/wikipedia/commons/0/0a/OPPO_LOGO_2019.svg",
   },
   {
     id: "boat",
     name: "boAt",
     logoUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/7/76/BoAt_logo.svg",
+      "https://upload.wikimedia.org/wikipedia/commons/2/24/Boat-logo.png",
   },
 ];
 
@@ -197,7 +183,7 @@ function ShoppingHome() {
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 640) {
-        setVisibleCategoryCount(3);
+        setVisibleCategoryCount(2);
       } else if (window.innerWidth < 1024) {
         setVisibleCategoryCount(4);
       } else {
@@ -230,7 +216,7 @@ function ShoppingHome() {
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 640) {
-        setVisibleBrandCount(3);
+        setVisibleBrandCount(2);
       } else if (window.innerWidth < 1024) {
         setVisibleBrandCount(4);
       } else {
@@ -316,6 +302,14 @@ function ShoppingHome() {
   useEffect(() => {
     dispatch(getFeatureImages());
   }, [dispatch]);
+
+  console.log({
+    startIndex,
+    totalItems: categoriesWithImage.length,
+    visibleCategoryCount,
+    showRightArrow:
+      startIndex < categoriesWithImage.length - visibleCategoryCount,
+  });
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -415,7 +409,7 @@ function ShoppingHome() {
                 {categoriesWithImage.map((category, index) => (
                   <motion.div
                     key={category.id}
-                    className="w-[calc((100%-4rem)/3)] sm:w-[calc((100%-6rem)/4)] lg:w-[calc((100%-6rem)/5)] flex-shrink-0"
+                    className="w-[48%] sm:w-[30%] lg:w-[18%] flex-shrink-0"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
@@ -486,7 +480,7 @@ function ShoppingHome() {
                 {brandsWithLogo.map((brand, index) => (
                   <motion.div
                     key={brand.id}
-                    className="w-[calc((100%-4rem)/3)] sm:w-[calc((100%-6rem)/4)] lg:w-[calc((100%-6rem)/5)] flex-shrink-0"
+                    className="w-[48%] sm:w-[30%] lg:w-[18%] flex-shrink-0"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
