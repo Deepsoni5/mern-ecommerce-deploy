@@ -8,7 +8,14 @@ import {
 } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { Button } from "../ui/button";
-import { HousePlug, LogOut, Menu, ShoppingCart, UserCog } from "lucide-react";
+import {
+  HousePlug,
+  LogOut,
+  Menu,
+  Search,
+  ShoppingCart,
+  UserCog,
+} from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   DropdownMenu,
@@ -135,6 +142,9 @@ function HeaderRightContent() {
 
 function ShoppingHeader() {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const [openCartSheet, setOpenCartSheet] = useState(false);
+  const { cartItems } = useSelector((state) => state.shopCart);
+  const navigate = useNavigate();
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
@@ -142,18 +152,41 @@ function ShoppingHeader() {
           <HousePlug className="h-6 w-6" />
           <span className="font-bold">Raj Telecom</span>
         </Link>
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="lg:hidden">
-              <Menu className="h-6 w-6" />
-              <span className="sr-only">Toggle Header Menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-full max-w-xs bg-white">
-            <MenuItems />
-            <HeaderRightContent />
-          </SheetContent>
-        </Sheet>
+        <div className="flex items-center gap-2 lg:hidden">
+          <Button
+            onClick={() => navigate("/shop/search")}
+            variant="outline"
+            size="icon"
+            className="relative"
+          >
+            <Search className="w-6 h-6" />
+            <span className="sr-only">Search</span>
+          </Button>
+          <Button
+            onClick={() => setOpenCartSheet(true)}
+            variant="outline"
+            size="icon"
+            className="relative"
+          >
+            <ShoppingCart className="w-6 h-6 rounded-lg" />
+            <span className="absolute top-[-5px] right-[2px] font-bold text-sm">
+              {cartItems?.items?.length || 0}
+            </span>
+            <span className="sr-only">User Cart</span>
+          </Button>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Toggle Header Menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-full max-w-xs bg-white">
+              <MenuItems />
+              <HeaderRightContent />
+            </SheetContent>
+          </Sheet>
+        </div>
         <div className="hidden lg:block">
           <MenuItems />
         </div>
@@ -162,6 +195,19 @@ function ShoppingHeader() {
           <HeaderRightContent />
         </div>
       </div>
+
+      <Sheet open={openCartSheet} onOpenChange={setOpenCartSheet}>
+        <SheetContent>
+          <UserCartWrapper
+            cartItems={
+              cartItems && cartItems.items && cartItems.items.length > 0
+                ? cartItems.items
+                : []
+            }
+            setOpenCartSheet={setOpenCartSheet}
+          />
+        </SheetContent>
+      </Sheet>
     </header>
   );
 }
