@@ -75,7 +75,7 @@ const loginUser = async (req, res) => {
       },
       "CLIENT_SECRET_KEY",
       {
-        expiresIn: "60m",
+        expiresIn: "30d",
       }
     );
 

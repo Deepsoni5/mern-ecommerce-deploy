@@ -80,7 +80,7 @@ function ShoppingCheckout() {
       if (data?.payload?.success) {
         setIsPaymentStart(true);
         const options = {
-          key: "rzp_test_oVTE32eUZiV3Vi",
+          key: "rzp_live_mhZELWZlesB3Tg",
           amount: data?.payload?.order?.totalAmount,
           currency: "INR",
           name: "Raj Telecom",
