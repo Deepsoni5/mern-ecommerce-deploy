@@ -18,7 +18,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -244,13 +244,13 @@ function ShoppingHome() {
   const showBrandRightArrow =
     brandStartIndex < brandsWithLogo.length - visibleBrandCount;
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prevSlide) => (prevSlide + 1) % featureImageList.length);
-    }, 4000);
+  // useEffect(() => {
+  //   const timer = setInterval(() => {
+  //     setCurrentSlide((prevSlide) => (prevSlide + 1) % featureImageList.length);
+  //   }, 4000);
 
-    return () => clearInterval(timer);
-  }, [featureImageList]);
+  //   return () => clearInterval(timer);
+  // }, [featureImageList]);
 
   useEffect(() => {
     dispatch(
@@ -313,53 +313,96 @@ function ShoppingHome() {
     dispatch(getFeatureImages());
   }, [dispatch]);
 
+  const slides = [
+    { type: "video", src: "/promo.mp4" }, // Static video slide
+    ...featureImageList.map((slide) => ({ type: "image", src: slide.image })),
+  ];
+
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    if (slides[currentSlide].type === "video" || isVideoPlaying) return; // No auto-slide if a video is playing
+
+    const timer = setTimeout(() => {
+      handleNextSlide();
+    }, 4000); // 4-second delay for images
+
+    return () => clearTimeout(timer);
+  }, [currentSlide, isVideoPlaying]);
+
+  useEffect(() => {
+    if (slides[currentSlide].type === "video" && videoRef.current) {
+      videoRef.current.currentTime = 0; // Reset video to start
+      videoRef.current.play(); // Ensure it starts playing
+    }
+  }, [currentSlide]);
+
+  const handleNextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] lg:aspect-[3/1] overflow-hidden">
-        {featureImageList && featureImageList.length > 0
-          ? featureImageList.map((slide, index) => (
-              <div
-                key={index}
-                className={`${
-                  index === currentSlide ? "opacity-100" : "opacity-0"
-                } absolute inset-0 transition-opacity duration-1000 ease-in-out`}
-              >
-                <img
-                  src={slide?.image || "/placeholder.svg"}
-                  alt={`Slide ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            ))
-          : null}
+        {slides.map((slide, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+              index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
+            }`}
+          >
+            {slide.type === "video" ? (
+              <video
+                ref={videoRef}
+                src={slide.src}
+                autoPlay
+                muted
+                playsInline
+                className="w-full h-full object-cover lg:object-contain" // Ensure full fit on large screens
+                onPlay={() => setIsVideoPlaying(true)}
+                onEnded={() => {
+                  setIsVideoPlaying(false);
+                  setTimeout(handleNextSlide, 500);
+                }}
+              />
+            ) : (
+              <img
+                src={slide.src || "/placeholder.svg"}
+                alt={`Slide ${index}`}
+                className="w-full h-full object-cover"
+              />
+            )}
+          </div>
+        ))}
+
+        {/* Left Button */}
         <Button
           variant="outline"
           size="icon"
           onClick={() =>
             setCurrentSlide(
-              (prevSlide) =>
-                (prevSlide - 1 + featureImageList.length) %
-                featureImageList.length
+              (prevSlide) => (prevSlide - 1 + slides.length) % slides.length
             )
           }
-          className="absolute rounded-full top-1/2 left-4 transform -translate-y-1/2 bg-white/80 hover:bg-white"
+          className="absolute rounded-full top-1/2 left-4 transform -translate-y-1/2 bg-white/80 hover:bg-white z-20"
         >
           <ChevronLeft className="w-4 h-4 sm:w-6 sm:h-6" />
         </Button>
+
+        {/* Right Button */}
         <Button
           variant="outline"
           size="icon"
-          onClick={() =>
-            setCurrentSlide(
-              (prevSlide) => (prevSlide + 1) % featureImageList.length
-            )
-          }
-          className="absolute rounded-full top-1/2 right-4 transform -translate-y-1/2 bg-white/80 hover:bg-white"
+          onClick={handleNextSlide}
+          className="absolute rounded-full top-1/2 right-4 transform -translate-y-1/2 bg-white/80 hover:bg-white z-20"
         >
           <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6" />
         </Button>
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {featureImageList.map((_, index) => (
+
+        {/* Dots Navigation */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+          {slides.map((_, index) => (
             <button
               key={index}
               className={`w-2 h-2 rounded-full transition-all duration-300 ${
