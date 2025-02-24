@@ -1,12 +1,4 @@
-import React from "react";
-import {
-  Shield,
-  Truck,
-  CreditCard,
-  RotateCcw,
-  CheckCircle,
-  Headset,
-} from "lucide-react";
+import { Shield, Truck, CreditCard, RefreshCcw } from "lucide-react";
 
 const features = [
   {
@@ -25,9 +17,9 @@ const features = [
     description: "Multiple payment options for your convenience.",
   },
   {
-    icon: Headset,
-    title: "24/7 Customer Support",
-    description: "Our team is here to assist you anytime with your queries.",
+    icon: RefreshCcw,
+    title: "Easy Replacements",
+    description: "Hassle-free replacement for damaged or defective products.",
   },
 ];
 

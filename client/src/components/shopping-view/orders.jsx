@@ -18,6 +18,7 @@ import {
   resetOrderDetails,
 } from "@/store/shop/order-slice";
 import { Badge } from "../ui/badge";
+import { MessageCircle } from "lucide-react";
 
 function ShoppingOrders() {
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
@@ -37,6 +38,16 @@ function ShoppingOrders() {
     if (orderDetails !== null) setOpenDetailsDialog(true);
   }, [orderDetails]);
 
+  function handleWhatsAppFeedback(orderId, amount) {
+    const phoneNumber = "919316354141"; // WhatsApp number
+    const message = `Hello, I would like to share feedback on my order.\nOrder ID: ${orderId}\nTotal Amount: ₹${amount}`;
+    const encodedMessage = encodeURIComponent(message);
+    window.open(
+      `https://wa.me/${phoneNumber}?text=${encodedMessage}`,
+      "_blank"
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -50,6 +61,7 @@ function ShoppingOrders() {
               <TableHead>Order Date</TableHead>
               <TableHead>Order Status</TableHead>
               <TableHead>Order Price</TableHead>
+              <TableHead>Feedback</TableHead>
               <TableHead>
                 <span className="sr-only">Details</span>
               </TableHead>
@@ -75,6 +87,21 @@ function ShoppingOrders() {
                       </Badge>
                     </TableCell>
                     <TableCell>₹{orderItem?.totalAmount}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        className="p-2 text-green-600"
+                        onClick={() =>
+                          handleWhatsAppFeedback(
+                            orderItem?._id,
+                            orderItem?.totalAmount
+                          )
+                        }
+                      >
+                        <MessageCircle className="w-10 h-10" />
+                        <p>WhatsApp</p>
+                      </Button>
+                    </TableCell>
                     <TableCell>
                       <Dialog
                         open={openDetailsDialog}

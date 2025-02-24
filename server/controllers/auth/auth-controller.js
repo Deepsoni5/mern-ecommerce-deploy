@@ -5,9 +5,30 @@ const User = require("../../models/User");
 // register
 
 const registerUser = async (req, res) => {
-  const { userName, email, password } = req.body;
+  const { userName, email, password, phone } = req.body;
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   try {
+    if (!userName || !email || !phone || !password) {
+      return res.json({
+        success: false,
+        message: "All fields are required!",
+      });
+    }
+
+    if (!emailRegex.test(email)) {
+      return res.json({
+        success: false,
+        message: "Invalid email format! Please enter a valid email.",
+      });
+    }
+    if (!/^\d{10}$/.test(phone)) {
+      return res.json({
+        success: false,
+        message: "Phone number must be exactly 10 digits!",
+      });
+    }
     // check if user already exists
 
     const checkUser = await User.findOne({ email });
@@ -18,12 +39,22 @@ const registerUser = async (req, res) => {
       });
     }
 
+    const checkPhone = await User.findOne({ phone });
+    if (checkPhone) {
+      return res.json({
+        success: false,
+        message:
+          "User already exists with the same phone number! Please try again",
+      });
+    }
+
     const hashPassword = await bcrypt.hash(password, 12);
 
     const newUser = new User({
       userName,
       email,
       password: hashPassword,
+      phone,
     });
 
     await newUser.save();
@@ -43,10 +74,19 @@ const registerUser = async (req, res) => {
 
 // login
 const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { identifier, password } = req.body;
+
+  if (!identifier || !password) {
+    return res.json({
+      success: false,
+      message: "All fields are required!",
+    });
+  }
 
   try {
-    const checkUser = await User.findOne({ email });
+    const checkUser = await User.findOne({
+      $or: [{ email: identifier }, { phone: identifier }],
+    });
     if (!checkUser) {
       return res.json({
         success: false,
@@ -71,6 +111,7 @@ const loginUser = async (req, res) => {
         id: checkUser._id,
         role: checkUser.role,
         email: checkUser.email,
+        phone: checkUser.phone,
         userName: checkUser.userName,
       },
       "CLIENT_SECRET_KEY",
@@ -86,6 +127,7 @@ const loginUser = async (req, res) => {
         email: checkUser.email,
         role: checkUser.role,
         id: checkUser._id,
+        phone: checkUser.phone,
         userName: checkUser.userName,
       },
     });

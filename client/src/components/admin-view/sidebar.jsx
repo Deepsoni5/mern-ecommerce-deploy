@@ -1,8 +1,11 @@
 import {
   BadgeCheck,
   ChartNoAxesCombined,
+  CheckCircle,
   LayoutDashboard,
+  MessageSquare,
   ShoppingBasket,
+  Truck,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
@@ -22,9 +25,27 @@ const adminSidebarMenuItems = [
   },
   {
     id: "orders",
-    label: "Orders",
+    label: "All Orders",
     path: "/admin/orders",
     icon: <BadgeCheck />,
+  },
+  {
+    id: "dispatch-orders",
+    label: "Dispatch Orders",
+    path: "/admin/dispatch-orders",
+    icon: <Truck />, // Truck icon for dispatch
+  },
+  {
+    id: "confirm-orders",
+    label: "Confirm Orders",
+    path: "/admin/confirm-orders",
+    icon: <CheckCircle />, // CheckCircle icon for confirmation
+  },
+  {
+    id: "inquiries",
+    label: "Inquiries",
+    path: "/admin/inquiries",
+    icon: <MessageSquare />,
   },
 ];
 

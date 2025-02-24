@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import AuthLayout from "./components/auth/layout";
 import AuthLogin from "./pages/auth/login";
 import AuthRegister from "./pages/auth/register";
@@ -22,6 +22,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import SearchProducts from "./pages/shopping-view/search";
 import SuccessOrder from "./pages/shopping-view/successful-order";
 import FailOrder from "./pages/shopping-view/fail-order";
+import ShoppingTerms from "./pages/shopping-view/terms";
+import ShoppingPolicy from "./pages/shopping-view/privacy";
+import ShoppingContact from "./pages/shopping-view/contact";
+import AdminInquiries from "./pages/admin-view/inquiries";
+import AdminDispatchOrders from "./pages/admin-view/dispatch-orders";
+import AdminConfirmOrders from "./pages/admin-view/confirm-orders";
+
+function ProtectedRoute({ element }) {
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  return isAuthenticated ? element : <Navigate to="/auth/login" replace />;
+}
 
 function App() {
   const { user, isAuthenticated, isLoading } = useSelector(
@@ -39,59 +50,56 @@ function App() {
 
   return (
     <div className="flex flex-col overflow-hidden bg-white">
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <CheckAuth
-              isAuthenticated={isAuthenticated}
-              user={user}
-            ></CheckAuth>
-          }
-        />
-        <Route
-          path="/auth"
-          element={
-            <CheckAuth isAuthenticated={isAuthenticated} user={user}>
-              <AuthLayout />
-            </CheckAuth>
-          }
-        >
-          <Route path="login" element={<AuthLogin />} />
-          <Route path="register" element={<AuthRegister />} />
-        </Route>
-        <Route
-          path="/admin"
-          element={
-            <CheckAuth isAuthenticated={isAuthenticated} user={user}>
-              <AdminLayout />
-            </CheckAuth>
-          }
-        >
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="products" element={<AdminProducts />} />
-          <Route path="orders" element={<AdminOrders />} />
-          <Route path="features" element={<AdminFeatures />} />
-        </Route>
-        <Route
-          path="/shop"
-          element={
-            <CheckAuth isAuthenticated={isAuthenticated} user={user}>
-              <ShoppingLayout />
-            </CheckAuth>
-          }
-        >
-          <Route path="home" element={<ShoppingHome />} />
-          <Route path="listing" element={<ShoppingListing />} />
-          <Route path="checkout" element={<ShoppingCheckout />} />
-          <Route path="account" element={<ShoppingAccount />} />
-          <Route path="search" element={<SearchProducts />} />
-          <Route path="successful" element={<SuccessOrder />} />
-          <Route path="fail" element={<FailOrder />} />
-        </Route>
-        <Route path="*" element={<NotFound />} />
-        <Route path="/unauth-page" element={<UnAuthPage />} />
-      </Routes>
+      <main className="pt-16">
+        <Routes>
+          <Route path="/" element={<Navigate to="/shop/home" replace />} />
+          <Route
+            path="/auth"
+            element={
+              <CheckAuth isAuthenticated={isAuthenticated} user={user}>
+                <AuthLayout />
+              </CheckAuth>
+            }
+          >
+            <Route path="login" element={<AuthLogin />} />
+            <Route path="register" element={<AuthRegister />} />
+          </Route>
+          <Route
+            path="/admin"
+            element={
+              <CheckAuth isAuthenticated={isAuthenticated} user={user}>
+                <AdminLayout />
+              </CheckAuth>
+            }
+          >
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="products" element={<AdminProducts />} />
+            <Route path="orders" element={<AdminOrders />} />
+            <Route path="dispatch-orders" element={<AdminDispatchOrders />} />
+            <Route path="confirm-orders" element={<AdminConfirmOrders />} />
+            <Route path="features" element={<AdminFeatures />} />
+            <Route path="inquiries" element={<AdminInquiries />} />
+          </Route>
+          <Route path="/shop" element={<ShoppingLayout />}>
+            <Route path="home" element={<ShoppingHome />} />
+            <Route path="listing" element={<ShoppingListing />} />
+            <Route path="account" element={<ShoppingAccount />} />
+            <Route path="terms" element={<ShoppingTerms />} />
+            <Route path="policy" element={<ShoppingPolicy />} />
+            <Route path="contact" element={<ShoppingContact />} />
+            <Route path="search" element={<SearchProducts />} />
+            <Route path="successful" element={<SuccessOrder />} />
+            <Route path="fail" element={<FailOrder />} />
+          </Route>
+
+          <Route
+            path="/shop/checkout"
+            element={<ProtectedRoute element={<ShoppingCheckout />} />}
+          />
+          <Route path="*" element={<NotFound />} />
+          <Route path="/unauth-page" element={<UnAuthPage />} />
+        </Routes>
+      </main>
     </div>
   );
 }

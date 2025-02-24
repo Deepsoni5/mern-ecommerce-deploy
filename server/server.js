@@ -13,6 +13,7 @@ const shopAddressRouter = require("./routes/shop/address-routes");
 const shopOrderRouter = require("./routes/shop/order-routes");
 const shopSearchRouter = require("./routes/shop/search-routes");
 const shopReviewRouter = require("./routes/shop/review-routes");
+const contactRouter = require("./routes/contact/contact");
 
 const commonFeatureRouter = require("./routes/common/feature-routes");
 mongoose
@@ -54,6 +55,8 @@ app.use("/api/shop/search", shopSearchRouter);
 app.use("/api/shop/review", shopReviewRouter);
 
 app.use("/api/common/feature", commonFeatureRouter);
+
+app.use("/api/contact", contactRouter);
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);

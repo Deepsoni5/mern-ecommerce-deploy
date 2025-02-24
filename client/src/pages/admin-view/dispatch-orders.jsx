@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
-import { Button } from "../ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Dialog } from "../ui/dialog";
+import { Button } from "../../../src/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../../src/components/ui/card";
+import { Dialog } from "../../../src/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -9,17 +14,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../ui/table";
-import AdminOrderDetailsView from "./order-details";
+} from "../../../src/components/ui/table";
+import AdminOrderDetailsView from "../../components/admin-view/order-details";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getAllOrdersForAdmin,
   getOrderDetailsForAdmin,
   resetOrderDetails,
 } from "@/store/admin/order-slice";
-import { Badge } from "../ui/badge";
+import { Badge } from "../../../src/components/ui/badge";
 
-function AdminOrdersView() {
+function AdminDispatchOrders() {
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const { orderList, orderDetails } = useSelector((state) => state.adminOrder);
@@ -37,17 +42,17 @@ function AdminOrdersView() {
     if (orderDetails !== null) setOpenDetailsDialog(true);
   }, [orderDetails]);
 
-  // Filter orders based on the selected date
-  const filteredOrders = selectedDate
-    ? orderList.filter(
-        (order) => order.orderDate.split("T")[0] === selectedDate
-      )
-    : orderList;
+  // Filter delivered orders based on the selected date
+  const deliveredOrders = orderList.filter(
+    (order) =>
+      order.orderStatus === "delivered" &&
+      (!selectedDate || order.orderDate.split("T")[0] === selectedDate)
+  );
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>All Orders</CardTitle>
+        <CardTitle>Delivered Orders</CardTitle>
       </CardHeader>
       <CardContent>
         {/* Date Picker for Filtering Orders */}
@@ -63,7 +68,6 @@ function AdminOrdersView() {
         </div>
 
         {/* Orders Table */}
-
         <Table>
           <TableHeader>
             <TableRow>
@@ -78,22 +82,14 @@ function AdminOrdersView() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredOrders.length > 0 ? (
-              filteredOrders.map((orderItem) => (
+            {deliveredOrders.length > 0 ? (
+              deliveredOrders.map((orderItem) => (
                 <TableRow key={orderItem?._id}>
                   <TableCell>{orderItem?._id}</TableCell>
                   <TableCell>{orderItem?.addressInfo?.city}</TableCell>
                   <TableCell>{orderItem?.orderDate.split("T")[0]}</TableCell>
                   <TableCell>
-                    <Badge
-                      className={`py-1 px-3 ${
-                        orderItem?.orderStatus === "confirmed"
-                          ? "bg-green-500"
-                          : orderItem?.orderStatus === "rejected"
-                          ? "bg-red-600"
-                          : "bg-black text-white hover:text-black"
-                      }`}
-                    >
+                    <Badge className="py-1 px-3 bg-blue-500">
                       {orderItem?.orderStatus}
                     </Badge>
                   </TableCell>
@@ -118,8 +114,9 @@ function AdminOrdersView() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="text-center">
-                  No orders found for the selected date.
+                <TableCell colSpan={6} className="text-center">
+                  No delivered orders found{" "}
+                  {selectedDate && `for ${selectedDate}`}..
                 </TableCell>
               </TableRow>
             )}
@@ -130,4 +127,4 @@ function AdminOrdersView() {
   );
 }
 
-export default AdminOrdersView;
+export default AdminDispatchOrders;

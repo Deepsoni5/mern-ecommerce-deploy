@@ -10,10 +10,12 @@ import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { Button } from "../ui/button";
 import {
   HousePlug,
+  LogIn,
   LogOut,
   Menu,
   Search,
   ShoppingCart,
+  UserCircle,
   UserCog,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
@@ -83,8 +85,10 @@ function HeaderRightContent() {
   }
 
   useEffect(() => {
-    dispatch(fetchCartItems(user?.id));
-  }, [dispatch]);
+    if (user?.id) {
+      dispatch(fetchCartItems(user.id));
+    }
+  }, [dispatch, user?.id]);
 
   return (
     <div className="flex lg:items-center lg:flex-row flex-col gap-4">
@@ -97,7 +101,7 @@ function HeaderRightContent() {
         >
           <ShoppingCart className="w-6 h-6 rounded-lg" />
           <span className="absolute top-[-5px] right-[2px] font-bold text-sm">
-            {cartItems?.items?.length || 0}
+            {user ? cartItems?.items?.length || 0 : ""}
           </span>
           <span className="sr-only">User Cart</span>
         </Button>
@@ -115,25 +119,48 @@ function HeaderRightContent() {
         <DropdownMenuTrigger asChild>
           <Avatar className="bg-black cursor-pointer">
             <AvatarFallback className="bg-black text-white font-extrabold">
-              {user?.userName[0].toUpperCase()}
+              {user ? (
+                user?.userName[0].toUpperCase()
+              ) : (
+                <UserCircle className="w-6 h-6" />
+              )}
+              {/* Show initial if logged in, otherwise guest icon */}
             </AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
+
         <DropdownMenuContent side="right" className="w-56 bg-white">
-          <DropdownMenuLabel>Logged in as {user?.userName}</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="cursor-pointer"
-            onClick={() => navigate("/shop/account")}
-          >
-            <UserCog className="mr-2 h-4 w-4" />
-            Account
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </DropdownMenuItem>
+          {user ? (
+            <>
+              <DropdownMenuLabel>
+                Logged in as {user?.userName}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => navigate("/shop/account")}
+              >
+                <UserCog className="mr-2 h-4 w-4" />
+                Account
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="cursor-pointer text-red-500"
+                onClick={handleLogout}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </DropdownMenuItem>
+            </>
+          ) : (
+            <DropdownMenuItem
+              className="cursor-pointer flex items-center justify-center"
+              onClick={() => navigate("/auth/login")}
+            >
+              <LogIn className="mr-2 h-4 w-4" />
+              Login to see your account
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
@@ -146,7 +173,7 @@ function ShoppingHeader() {
   const { cartItems } = useSelector((state) => state.shopCart);
   const navigate = useNavigate();
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background">
+    <header className="fixed top-0 left-0 z-50 w-full border-b bg-white shadow-md">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
         <Link to="/shop/home" className="flex items-center gap-2">
           <HousePlug className="h-6 w-6" />
@@ -170,7 +197,7 @@ function ShoppingHeader() {
           >
             <ShoppingCart className="w-6 h-6 rounded-lg" />
             <span className="absolute top-[-5px] right-[2px] font-bold text-sm">
-              {cartItems?.items?.length || 0}
+              {user ? cartItems?.items?.length || 0 : ""}
             </span>
             <span className="sr-only">User Cart</span>
           </Button>

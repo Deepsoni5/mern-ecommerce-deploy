@@ -34,6 +34,7 @@ import { getFeatureImages } from "@/store/common-slice";
 import { AnimatePresence, motion } from "framer-motion";
 import { WhyChooseUs } from "./WhyChooseUs";
 import { Testimonials } from "./Testimonials";
+import { toast } from "../../../src/hooks/use-toast";
 
 const categoriesWithIcon = [
   { id: "men", label: "Buds", icon: ShirtIcon },
@@ -169,7 +170,7 @@ function ShoppingHome() {
   const { productList, productDetails, rateProductList } = useSelector(
     (state) => state.shopProducts
   );
-  const { user } = useSelector((state) => state.auth);
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { featureImageList } = useSelector((state) => state.commonFeature);
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
 
@@ -269,6 +270,15 @@ function ShoppingHome() {
   }
 
   function handleAddtoCart(getCurrentProductId) {
+    if (!isAuthenticated) {
+      toast({
+        title: "Login Required",
+        description: "You need to log in to add items to the cart.",
+        variant: "destructive", // Red-colored toast
+      });
+      setTimeout(() => navigate("/auth/login"), 1500); // Redirect after 1.5 seconds
+      return;
+    }
     dispatch(
       addToCart({
         userId: user?.id,

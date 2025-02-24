@@ -9,7 +9,7 @@ function ShoppingProductTile({
   handleAddtoCart,
 }) {
   return (
-    <Card className="w-full max-w-sm mx-auto cursor-pointer rounded-xl shadow-md border p-2">
+    <Card className="w-full max-w-sm mx-auto cursor-pointer rounded-xl shadow-lg border-none p-3">
       <div onClick={() => handleGetProductDetails(product?._id)}>
         <div className="relative h-60 overflow-hidden">
           <img

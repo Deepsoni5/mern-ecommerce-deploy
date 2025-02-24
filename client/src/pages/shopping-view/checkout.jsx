@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { createNewOrder } from "@/store/shop/order-slice";
 import { useToast } from "@/hooks/use-toast";
+import ShoppingHeader from "@/components/shopping-view/header";
+import { Link } from "react-router-dom";
 function ShoppingCheckout() {
   const { cartItems } = useSelector((state) => state.shopCart);
   const { user } = useSelector((state) => state.auth);
@@ -109,6 +111,7 @@ function ShoppingCheckout() {
 
   return (
     <div className="flex flex-col">
+      <ShoppingHeader />
       <div className="relative h-[300px] w-full overflow-hidden">
         <img src={img} className="h-full w-full object-cover object-center" />
       </div>
@@ -136,6 +139,13 @@ function ShoppingCheckout() {
                 ? "Processing Razorpay Payment..."
                 : "Checkout with Razorpay"}
             </Button>
+            <p className="mt-2 text-sm text-gray-600 text-center">
+              By placing an order, you agree to our{" "}
+              <Link to="/shop/terms" className="text-blue-600 underline">
+                Terms & Conditions
+              </Link>
+              .
+            </p>
           </div>
         </div>
       </div>

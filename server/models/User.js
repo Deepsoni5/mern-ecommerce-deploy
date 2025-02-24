@@ -15,6 +15,12 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  phone: {
+    type: String,
+    required: true,
+    unique: true,
+    match: [/^\d{10}$/, "Phone number must be exactly 10 digits"],
+  },
   role: {
     type: String,
     default: "user",
