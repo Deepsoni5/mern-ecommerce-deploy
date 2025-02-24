@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 
 function AuthLayout() {
   return (
@@ -9,8 +9,16 @@ function AuthLayout() {
       </div>
 
       {/* Right side with the Outlet */}
-      <div className="flex flex-1 items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
+      <div className="flex flex-1 flex-col items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
         <Outlet />
+
+        {/* Back to Shop/Home Link */}
+        <Link
+          to="/shop/home"
+          className="mt-6 text-blue-600 underline text-sm hover:text-blue-800"
+        >
+          ← Back to Shop
+        </Link>
       </div>
     </div>
   );
