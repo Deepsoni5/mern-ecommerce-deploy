@@ -170,7 +170,7 @@ const authMiddleWare = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, "CLIENT_SECRET_KEY");
-    console.log(decoded);
+
     req.user = decoded;
     next();
   } catch (error) {
