@@ -15,7 +15,7 @@ function ShoppingProductTile({
           <img
             src={product?.image}
             alt={product?.title}
-            className="w-full h-full object-cover object-center transition-transform duration-300 ease-in-out hover:scale-105"
+            className="w-full h-full object-contain object-center transition-transform duration-300 ease-in-out hover:scale-105"
           />
           {product?.totalStock === 0 ? (
             <Badge className="absolute top-2 left-2 bg-red-500 hover:bg-red-600">

@@ -1,73 +1,135 @@
 import { Minus, Plus, Trash } from "lucide-react";
 import { Button } from "../ui/button";
-import { deleteCartItem, updateCartQuantity } from "@/store/shop/cart-slice";
+import {
+  deleteCartItem,
+  fetchCartItems,
+  fetchGuestCartDetails,
+  updateCartQuantity,
+} from "@/store/shop/cart-slice";
 import { useDispatch, useSelector } from "react-redux";
 import { useToast } from "@/hooks/use-toast";
 
 function UserCartItemsContent({ cartItem }) {
   const dispatch = useDispatch();
   const { toast } = useToast();
-  const { user } = useSelector((state) => state.auth);
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
   const { productList } = useSelector((state) => state.shopProducts);
 
   function handleUpdateQuantity(getCartItem, typeOfAction) {
-    if (typeOfAction == "plus") {
-      let getCartItems = cartItems.items || [];
+    let newQuantity =
+      typeOfAction === "plus"
+        ? getCartItem?.quantity + 1
+        : getCartItem?.quantity - 1;
 
-      if (getCartItems.length) {
-        const indexOfCurrentCartItem = getCartItems.findIndex(
-          (item) => item.productId === getCartItem?.productId
-        );
-
-        const getCurrentProductIndex = productList.findIndex(
-          (product) => product._id === getCartItem?.productId
-        );
-        const getTotalStock = productList[getCurrentProductIndex].totalStock;
-
-        if (indexOfCurrentCartItem > -1) {
-          const getQuantity = getCartItems[indexOfCurrentCartItem].quantity;
-          if (getQuantity + 1 > getTotalStock) {
-            toast({
-              title: `Only ${getQuantity} quantity can be added for this item`,
-              variant: "destructive",
-            });
-
-            return;
-          }
-        }
-      }
+    if (newQuantity <= 0) {
+      toast({
+        title: "Quantity must be at least 1",
+        variant: "destructive",
+      });
+      return;
     }
 
-    dispatch(
-      updateCartQuantity({
-        userId: user?.id,
-        productId: getCartItem?.productId,
-        quantity:
-          typeOfAction === "plus"
-            ? getCartItem?.quantity + 1
-            : getCartItem?.quantity - 1,
-      })
-    ).then((data) => {
-      if (data?.payload?.success) {
-        toast({
-          title: "Cart item is updated successfully",
-        });
+    // ✅ Find the product in productList to get its stock
+    const currentProduct = productList.find(
+      (product) => product._id === getCartItem?.productId
+    );
+
+    if (!currentProduct) {
+      toast({
+        title: "Product not found in stock!",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // ✅ Get total stock available for the product
+    const totalStock = currentProduct.totalStock;
+
+    if (newQuantity > totalStock) {
+      toast({
+        title: `Only ${totalStock} quantity available for this item`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isAuthenticated) {
+      // 🛒 Guest User - Update in localStorage
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+      const index = cart.findIndex(
+        (item) => item.productId === getCartItem.productId
+      );
+
+      if (index !== -1) {
+        cart[index].quantity = newQuantity;
       }
-    });
+
+      // Save updated cart
+      localStorage.setItem("cart", JSON.stringify(cart));
+
+      toast({
+        title: "Cart item updated successfully",
+      });
+
+      // ✅ Fetch updated cart details for UI update
+      dispatch(fetchGuestCartDetails(cart));
+    } else {
+      // 👤 Logged-in User - Update in backend
+      dispatch(
+        updateCartQuantity({
+          userId: user?.id,
+          productId: getCartItem?.productId,
+          quantity: newQuantity,
+        })
+      ).then((data) => {
+        if (data?.payload?.success) {
+          toast({
+            title: "Cart item updated successfully",
+          });
+
+          // ✅ Fetch updated backend cart
+          dispatch(fetchCartItems(user?.id));
+        }
+      });
+    }
   }
 
   function handleCartItemDelete(getCartItem) {
-    dispatch(
-      deleteCartItem({ userId: user?.id, productId: getCartItem?.productId })
-    ).then((data) => {
-      if (data?.payload?.success) {
-        toast({
-          title: "Cart item is deleted successfully",
-        });
-      }
-    });
+    if (!isAuthenticated) {
+      // 🛒 Guest User - Remove from localStorage
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+      // Remove the item from the cart
+      cart = cart.filter((item) => item.productId !== getCartItem.productId);
+
+      // Update localStorage
+      localStorage.setItem("cart", JSON.stringify(cart));
+
+      toast({
+        title: "Cart item deleted successfully",
+      });
+
+      // ✅ Fetch updated guest cart details to reflect UI changes
+      dispatch(fetchGuestCartDetails(cart));
+    } else {
+      // 👤 Logged-in User - Remove from Backend
+      dispatch(
+        deleteCartItem({ userId: user?.id, productId: getCartItem?.productId })
+      ).then((data) => {
+        if (data?.payload?.success) {
+          toast({
+            title: "Cart item deleted successfully",
+          });
+
+          // ✅ Fetch updated backend cart
+          dispatch(fetchCartItems(user?.id));
+        }
+      });
+    }
   }
+
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-3 sm:space-y-0 p-4 border rounded-lg">
       <div className="flex space-x-4 items-center">

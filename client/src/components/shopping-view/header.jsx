@@ -31,7 +31,11 @@ import { Avatar, AvatarFallback } from "../ui/avatar";
 import { logoutUser } from "@/store/auth-slice";
 import UserCartWrapper from "./cart-wrapper";
 import { useEffect, useState } from "react";
-import { fetchCartItems } from "@/store/shop/cart-slice";
+import {
+  clearCart,
+  fetchCartItems,
+  fetchGuestCartDetails,
+} from "@/store/shop/cart-slice";
 
 function MenuItems() {
   const navigate = useNavigate();
@@ -73,22 +77,34 @@ function MenuItems() {
 }
 
 function HeaderRightContent() {
-  const { user } = useSelector((state) => state.auth);
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
   const [openCartSheet, setOpenCartSheet] = useState(false);
   const { cartItems } = useSelector((state) => state.shopCart);
+  const [currentCartItems, setCurrentCartItems] = useState([]);
+  const [localCart, setLocalCart] = useState([]);
+  const location = useLocation();
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   function handleLogout() {
     dispatch(logoutUser());
+    dispatch(clearCart());
   }
 
   useEffect(() => {
     if (user?.id) {
-      dispatch(fetchCartItems(user.id));
+      dispatch(fetchCartItems(user?.id));
+    } else {
+      // Guest user: fetch cart from localStorage & get product details
+      const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
+      if (storedCart.length > 0) {
+        dispatch(fetchGuestCartDetails(storedCart));
+      }
     }
-  }, [dispatch, user?.id]);
+  }, [dispatch, user?.id, location.pathname]);
+
+  // Add this to see when cartItems updates
 
   return (
     <div className="flex lg:items-center lg:flex-row flex-col gap-4">
@@ -101,16 +117,12 @@ function HeaderRightContent() {
         >
           <ShoppingCart className="w-6 h-6 rounded-lg" />
           <span className="absolute top-[-5px] right-[2px] font-bold text-sm">
-            {user ? cartItems?.items?.length || 0 : ""}
+            {(user ? cartItems?.items?.length : cartItems?.length) || ""}
           </span>
           <span className="sr-only">User Cart</span>
         </Button>
         <UserCartWrapper
-          cartItems={
-            cartItems && cartItems.items && cartItems.items.length > 0
-              ? cartItems.items
-              : []
-          }
+          cartItems={user?.id ? cartItems.items : cartItems}
           setOpenCartSheet={setOpenCartSheet}
         />
       </Sheet>
@@ -171,9 +183,26 @@ function ShoppingHeader() {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const [openCartSheet, setOpenCartSheet] = useState(false);
   const { cartItems } = useSelector((state) => state.shopCart);
+
+  const [localCart, setLocalCart] = useState([]);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    if (user?.id) {
+      // Logged-in user: fetch cart from backend
+
+      dispatch(fetchCartItems(user?.id));
+    } else {
+      // Guest user: fetch cart from localStorage & get product details
+      const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
+      if (storedCart.length > 0) {
+        dispatch(fetchGuestCartDetails(storedCart));
+      }
+    }
+  }, [dispatch, user?.id]);
+
   const navigate = useNavigate();
   return (
-    <header className="fixed top-0 left-0 z-50 w-full border-b bg-white shadow-md">
+    <header className="fixed top-0 left-0 z-50 w-full border-none bg-white shadow-md">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
         <Link to="/shop/home" className="flex items-center gap-2">
           <HousePlug className="h-6 w-6" />
@@ -197,7 +226,7 @@ function ShoppingHeader() {
           >
             <ShoppingCart className="w-6 h-6 rounded-lg" />
             <span className="absolute top-[-5px] right-[2px] font-bold text-sm">
-              {user ? cartItems?.items?.length || 0 : ""}
+              {(user ? cartItems?.items?.length : cartItems?.length) || ""}
             </span>
             <span className="sr-only">User Cart</span>
           </Button>
@@ -226,11 +255,7 @@ function ShoppingHeader() {
       <Sheet open={openCartSheet} onOpenChange={setOpenCartSheet}>
         <SheetContent>
           <UserCartWrapper
-            cartItems={
-              cartItems && cartItems.items && cartItems.items.length > 0
-                ? cartItems.items
-                : []
-            }
+            cartItems={user ? cartItems?.items : cartItems}
             setOpenCartSheet={setOpenCartSheet}
           />
         </SheetContent>

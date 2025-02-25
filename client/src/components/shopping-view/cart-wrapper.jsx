@@ -7,10 +7,12 @@ import { useSelector } from "react-redux"; // Import useSelector to get user sta
 
 function UserCartWrapper({ cartItems, setOpenCartSheet }) {
   const navigate = useNavigate();
-  const user = useSelector((state) => state.auth.user); // Get user from Redux state
+  const user = useSelector((state) => state.auth.user);
+
+  // Get user from Redux state
 
   const totalCartAmount =
-    cartItems && cartItems.length > 0
+    cartItems && cartItems?.length > 0
       ? cartItems.reduce(
           (sum, currentItem) =>
             sum +
@@ -29,31 +31,16 @@ function UserCartWrapper({ cartItems, setOpenCartSheet }) {
       </SheetHeader>
 
       <div className="mt-8 space-y-4">
-        {user ? (
-          cartItems && cartItems.length > 0 ? (
-            cartItems.map((item) => (
-              <UserCartItemsContent key={item.id} cartItem={item} />
-            ))
-          ) : (
-            <EmptyCartPage />
-          )
+        {cartItems && cartItems?.length > 0 ? (
+          cartItems.map((item) => (
+            <UserCartItemsContent key={item.productId} cartItem={item} />
+          ))
         ) : (
-          <div className="text-center">
-            <p className="text-gray-500">Login to see your cart</p>
-            <Button
-              onClick={() => {
-                navigate("/auth/login");
-                setOpenCartSheet(false);
-              }}
-              className="mt-4"
-            >
-              Login
-            </Button>
-          </div>
+          <EmptyCartPage />
         )}
       </div>
 
-      {user && cartItems.length > 0 && (
+      {cartItems?.length > 0 && (
         <>
           <div className="mt-8 space-y-4">
             <div className="flex justify-between">

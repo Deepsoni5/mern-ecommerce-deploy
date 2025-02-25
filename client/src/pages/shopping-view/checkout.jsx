@@ -16,6 +16,8 @@ function ShoppingCheckout() {
   const dispatch = useDispatch();
   const { toast } = useToast();
 
+  console.log(user);
+
   const totalCartAmount =
     cartItems && cartItems.items && cartItems.items.length > 0
       ? cartItems.items.reduce(
@@ -94,7 +96,7 @@ function ShoppingCheckout() {
           prefill: {
             name: user?.userName,
             email: user?.email,
-            contact: "9999999999",
+            contact: user?.phone || "9999999999",
           },
           theme: {
             color: "#121212",

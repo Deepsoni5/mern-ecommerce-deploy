@@ -6,7 +6,11 @@ import { Separator } from "../ui/separator";
 import { Input } from "../ui/input";
 import { useDispatch, useSelector } from "react-redux";
 import { useToast } from "@/hooks/use-toast";
-import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
+import {
+  addToCart,
+  fetchCartItems,
+  fetchGuestCartDetails,
+} from "@/store/shop/cart-slice";
 import { setProductDetails } from "@/store/shop/products-slice";
 import { Label } from "../ui/label";
 import StarRatingComponent from "../common/star-rating";
@@ -18,7 +22,11 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const { toast } = useToast();
   const [reviewMsg, setReviewMsg] = useState("");
   const [rating, setRating] = useState(0);
-  const { user } = useSelector((state) => state.auth);
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const { productList, rateProductList } = useSelector(
+    (state) => state.shopProducts
+  );
+
   const { cartItems } = useSelector((state) => state.shopCart);
   const { reviews } = useSelector((state) => state.shopReview);
 
@@ -36,40 +44,109 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
         reviews.length
       : 0;
 
-  function handleAddToCart(getCurrentProductId, getTotalStock) {
-    let getCartItems = cartItems.items || [];
+  // function handleAddToCart(getCurrentProductId, getTotalStock) {
+  //   let getCartItems = cartItems.items || [];
 
-    if (getCartItems.length) {
-      const indexOfCurrentItem = getCartItems.findIndex(
+  //   if (getCartItems.length) {
+  //     const indexOfCurrentItem = getCartItems.findIndex(
+  //       (item) => item.productId === getCurrentProductId
+  //     );
+  //     if (indexOfCurrentItem > -1) {
+  //       const getQuantity = getCartItems[indexOfCurrentItem].quantity;
+
+  //       if (getQuantity + 1 > getTotalStock) {
+  //         toast({
+  //           title: `Only ${getQuantity} quantity can be added for this item`,
+  //           variant: "destructive",
+  //         });
+
+  //         return;
+  //       }
+  //     }
+  //   }
+  //   dispatch(
+  //     addToCart({
+  //       userId: user?.id,
+  //       productId: getCurrentProductId,
+  //       quantity: 1,
+  //     })
+  //   ).then((data) => {
+  //     if (data?.payload?.success) {
+  //       dispatch(fetchCartItems(user?.id));
+  //       toast({
+  //         title: "Product is added to cart",
+  //       });
+  //     }
+  //   });
+  // }
+
+  function handleAddToCart(getCurrentProductId) {
+    // ✅ Find the product in productList to get its stock
+    const currentProduct = productList.find(
+      (product) => product._id === getCurrentProductId
+    );
+
+    if (!currentProduct) {
+      toast({
+        title: "Product not found in stock!",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // ✅ Get total stock available for the product
+    const totalStock = currentProduct.totalStock;
+
+    if (!isAuthenticated) {
+      // Guest User - Store in localStorage
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      const existingIndex = cart.findIndex(
         (item) => item.productId === getCurrentProductId
       );
-      if (indexOfCurrentItem > -1) {
-        const getQuantity = getCartItems[indexOfCurrentItem].quantity;
 
-        if (getQuantity + 1 > getTotalStock) {
+      if (existingIndex !== -1) {
+        if (cart[existingIndex].quantity >= totalStock) {
           toast({
-            title: `Only ${getQuantity} quantity can be added for this item`,
+            title: `Only ${totalStock} quantity available for this item`,
             variant: "destructive",
           });
-
           return;
         }
+        cart[existingIndex].quantity += 1; // Increase quantity
+      } else {
+        cart.push({ productId: getCurrentProductId, quantity: 1 }); // Add new item
       }
+
+      localStorage.setItem("cart", JSON.stringify(cart));
+
+      toast({
+        title: "Product added to cart",
+      });
+
+      dispatch(fetchGuestCartDetails(cart)); // ✅ Fetch updated localStorage cart
+    } else {
+      // Logged-in User - Send API request
+      dispatch(
+        addToCart({
+          userId: user?.id,
+          productId: getCurrentProductId,
+          quantity: 1,
+        })
+      ).then((data) => {
+        if (data?.payload?.success) {
+          // ✅ Check if the backend prevents over-adding (ensure backend validation too)
+          dispatch(fetchCartItems(user?.id));
+          toast({
+            title: "Product added to cart",
+          });
+        } else if (data?.payload?.error === "out_of_stock") {
+          toast({
+            title: `Only ${totalStock} quantity available for this item`,
+            variant: "destructive",
+          });
+        }
+      });
     }
-    dispatch(
-      addToCart({
-        userId: user?.id,
-        productId: getCurrentProductId,
-        quantity: 1,
-      })
-    ).then((data) => {
-      if (data?.payload?.success) {
-        dispatch(fetchCartItems(user?.id));
-        toast({
-          title: "Product is added to cart",
-        });
-      }
-    });
   }
 
   function handleDialogClose() {
@@ -80,6 +157,15 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   }
 
   function handleAddReview() {
+    if (!user) {
+      toast({
+        title: "You must be logged in to add a review!",
+        variant: "destructive",
+      });
+      setRating(0);
+      setReviewMsg("");
+      return;
+    }
     dispatch(
       addReview({
         productId: productDetails?._id,

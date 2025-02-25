@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import {
   fetchAllFilteredProducts,
@@ -29,7 +29,12 @@ import {
 } from "@/store/shop/products-slice";
 import ShoppingProductTile from "@/components/shopping-view/product-tile";
 import ProductDetailsDialog from "@/components/shopping-view/product-details";
-import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
+import {
+  addToCart,
+  fetchCartItems,
+  fetchGuestCartDetails,
+  syncCartToBackend,
+} from "@/store/shop/cart-slice";
 import { getFeatureImages } from "@/store/common-slice";
 import { AnimatePresence, motion } from "framer-motion";
 import { WhyChooseUs } from "./WhyChooseUs";
@@ -244,14 +249,6 @@ function ShoppingHome() {
   const showBrandRightArrow =
     brandStartIndex < brandsWithLogo.length - visibleBrandCount;
 
-  // useEffect(() => {
-  //   const timer = setInterval(() => {
-  //     setCurrentSlide((prevSlide) => (prevSlide + 1) % featureImageList.length);
-  //   }, 4000);
-
-  //   return () => clearInterval(timer);
-  // }, [featureImageList]);
-
   useEffect(() => {
     dispatch(
       fetchAllFilteredProducts({
@@ -265,34 +262,83 @@ function ShoppingHome() {
     dispatch(fetchTopRatedProducts());
   }, [dispatch]);
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(syncCartToBackend(user?.id));
+    }
+  }, [isAuthenticated]);
+
   function handleGetProductDetails(getCurrentProductId) {
     dispatch(fetchProductDetails(getCurrentProductId));
   }
 
   function handleAddtoCart(getCurrentProductId) {
-    if (!isAuthenticated) {
+    // ✅ Find the product in productList to get its stock
+    const currentProduct = productList.find(
+      (product) => product._id === getCurrentProductId
+    );
+
+    if (!currentProduct) {
       toast({
-        title: "Login Required",
-        description: "You need to log in to add items to the cart.",
-        variant: "destructive", // Red-colored toast
+        title: "Product not found in stock!",
+        variant: "destructive",
       });
-      setTimeout(() => navigate("/auth/login"), 1500); // Redirect after 1.5 seconds
       return;
     }
-    dispatch(
-      addToCart({
-        userId: user?.id,
-        productId: getCurrentProductId,
-        quantity: 1,
-      })
-    ).then((data) => {
-      if (data?.payload?.success) {
-        dispatch(fetchCartItems(user?.id));
-        toast({
-          title: "Product is added to cart",
-        });
+
+    // ✅ Get total stock available for the product
+    const totalStock = currentProduct.totalStock;
+
+    if (!isAuthenticated) {
+      // Guest User - Store in localStorage
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      const existingIndex = cart.findIndex(
+        (item) => item.productId === getCurrentProductId
+      );
+
+      if (existingIndex !== -1) {
+        if (cart[existingIndex].quantity >= totalStock) {
+          toast({
+            title: `Only ${totalStock} quantity available for this item`,
+            variant: "destructive",
+          });
+          return;
+        }
+        cart[existingIndex].quantity += 1; // Increase quantity
+      } else {
+        cart.push({ productId: getCurrentProductId, quantity: 1 }); // Add new item
       }
-    });
+
+      localStorage.setItem("cart", JSON.stringify(cart));
+
+      toast({
+        title: "Product added to cart",
+      });
+
+      dispatch(fetchGuestCartDetails(cart)); // ✅ Fetch updated localStorage cart
+    } else {
+      // Logged-in User - Send API request
+      dispatch(
+        addToCart({
+          userId: user?.id,
+          productId: getCurrentProductId,
+          quantity: 1,
+        })
+      ).then((data) => {
+        if (data?.payload?.success) {
+          // ✅ Check if the backend prevents over-adding (ensure backend validation too)
+          dispatch(fetchCartItems(user?.id));
+          toast({
+            title: "Product added to cart",
+          });
+        } else if (data?.payload?.error === "out_of_stock") {
+          toast({
+            title: `Only ${totalStock} quantity available for this item`,
+            variant: "destructive",
+          });
+        }
+      });
+    }
   }
 
   function handleNavigateToListingPage(getCurrentItem, section) {
@@ -343,7 +389,7 @@ function ShoppingHome() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen p-2">
       <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] lg:aspect-[3/1] overflow-hidden">
         {slides.map((slide, index) => (
           <div
@@ -370,7 +416,7 @@ function ShoppingHome() {
               <img
                 src={slide.src || "/placeholder.svg"}
                 alt={`Slide ${index}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             )}
           </div>
@@ -576,6 +622,15 @@ function ShoppingHome() {
                   />
                 ))
               : null}
+          </div>
+
+          <div className="mt-8 text-center">
+            <Link
+              to="/shop/listing"
+              className="px-6 py-3 bg-black text-white rounded-xl text-lg font-medium hover:bg-white hover:text-black transition"
+            >
+              Show More
+            </Link>
           </div>
         </div>
       </section>

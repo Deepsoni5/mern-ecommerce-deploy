@@ -1,24 +1,71 @@
 const Cart = require("../../models/Cart");
 const Product = require("../../models/Product");
 
+// const addToCart = async (req, res) => {
+
+//   try {
+//     const { userId, productId, quantity } = req.body;
+
+//     if (!userId || !productId || quantity <= 0) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Invalid data provided!",
+//       });
+//     }
+
+//     const product = await Product.findById(productId);
+
+//     if (!product) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Product not found",
+//       });
+//     }
+
+//     let cart = await Cart.findOne({ userId });
+
+//     if (!cart) {
+//       cart = new Cart({ userId, items: [] });
+//     }
+
+//     const findCurrentProductIndex = cart.items.findIndex(
+//       (item) => item.productId.toString() === productId
+//     );
+
+//     if (findCurrentProductIndex === -1) {
+//       cart.items.push({ productId, quantity });
+//     } else {
+//       cart.items[findCurrentProductIndex].quantity += quantity;
+//     }
+
+//     await cart.save();
+//     res.status(200).json({
+//       success: true,
+//       data: cart,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Error",
+//     });
+//   }
+// };
+
 const addToCart = async (req, res) => {
   try {
     const { userId, productId, quantity } = req.body;
 
-    if (!userId || !productId || quantity <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid data provided!",
-      });
+    if (!productId || quantity <= 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid product data!" });
     }
 
-    const product = await Product.findById(productId);
-
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: "Product not found",
-      });
+    if (!userId) {
+      return res
+        .status(200)
+        .json({ success: true, message: "Cart updated in localStorage" });
     }
 
     let cart = await Cart.findOne({ userId });
@@ -27,27 +74,60 @@ const addToCart = async (req, res) => {
       cart = new Cart({ userId, items: [] });
     }
 
-    const findCurrentProductIndex = cart.items.findIndex(
+    const findProductIndex = cart.items.findIndex(
       (item) => item.productId.toString() === productId
     );
 
-    if (findCurrentProductIndex === -1) {
+    if (findProductIndex === -1) {
       cart.items.push({ productId, quantity });
     } else {
-      cart.items[findCurrentProductIndex].quantity += quantity;
+      cart.items[findProductIndex].quantity += quantity;
     }
 
     await cart.save();
-    res.status(200).json({
-      success: true,
-      data: cart,
-    });
+
+    res.status(200).json({ success: true, data: cart });
   } catch (error) {
     console.log(error);
-    res.status(500).json({
-      success: false,
-      message: "Error",
-    });
+    res.status(500).json({ success: false, message: "Error adding to cart" });
+  }
+};
+
+const syncCart = async (req, res) => {
+  try {
+    const { userId, items } = req.body;
+
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User ID required to sync cart" });
+    }
+
+    let cart = await Cart.findOne({ userId });
+
+    if (!cart) {
+      cart = new Cart({ userId, items });
+    } else {
+      items.forEach((newItem) => {
+        const existingIndex = cart.items.findIndex(
+          (item) => item.productId.toString() === newItem.productId
+        );
+
+        if (existingIndex === -1) {
+          cart.items.push(newItem);
+        } else {
+          cart.items[existingIndex].quantity += newItem.quantity;
+        }
+      });
+    }
+
+    await cart.save();
+
+    res
+      .status(200)
+      .json({ success: true, message: "Cart synced successfully", data: cart });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error syncing cart" });
   }
 };
 
@@ -56,9 +136,9 @@ const fetchCartItems = async (req, res) => {
     const { userId } = req.params;
 
     if (!userId) {
-      return res.status(400).json({
-        success: false,
-        message: "User id is manadatory!",
+      return res.status(200).json({
+        success: true,
+        data: [],
       });
     }
 
@@ -107,6 +187,34 @@ const fetchCartItems = async (req, res) => {
     });
   }
 };
+
+const fetchCartProductDetails = async (req, res) => {
+  try {
+    const { productIds } = req.body;
+
+    if (!productIds || productIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No product IDs provided!",
+      });
+    }
+
+    // Fetch products based on IDs and return selected fields
+    const products = await Product.find({ _id: { $in: productIds } }).select(
+      "image title price salePrice"
+    );
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Error fetching product details:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching product details!",
+    });
+  }
+};
+
+module.exports = { fetchCartProductDetails };
 
 const updateCartItemQty = async (req, res) => {
   try {
@@ -234,4 +342,6 @@ module.exports = {
   fetchCartItems,
   updateCartItemQty,
   deleteCartItem,
+  syncCart,
+  fetchCartProductDetails,
 };

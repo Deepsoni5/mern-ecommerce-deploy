@@ -15,7 +15,7 @@ function AdminProductTile({
           <img
             src={product?.image}
             alt={product?.title}
-            className="w-full h-full object-cover object-center transition-transform duration-300 ease-in-out hover:scale-105"
+            className="w-full h-full object-contain object-center transition-transform duration-300 ease-in-out hover:scale-105"
           />
         </div>
         <CardContent>
