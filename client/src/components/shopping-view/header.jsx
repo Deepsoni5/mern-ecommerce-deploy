@@ -186,6 +186,7 @@ function ShoppingHeader() {
 
   const [localCart, setLocalCart] = useState([]);
   const dispatch = useDispatch();
+  const location = useLocation();
   useEffect(() => {
     if (user?.id) {
       // Logged-in user: fetch cart from backend
@@ -198,7 +199,7 @@ function ShoppingHeader() {
         dispatch(fetchGuestCartDetails(storedCart));
       }
     }
-  }, [dispatch, user?.id]);
+  }, [dispatch, user?.id, location.pathname]);
 
   const navigate = useNavigate();
   return (
