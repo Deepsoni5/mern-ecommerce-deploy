@@ -39,7 +39,7 @@ export default function ShoppingFooter() {
             <ul className="space-y-2">
               <li>
                 <Link
-                  to="/privacy-policy"
+                  to="/shop/policy"
                   className="text-sm text-gray-600 hover:text-blue-600 transition-colors duration-300"
                 >
                   Privacy Policy
@@ -47,7 +47,7 @@ export default function ShoppingFooter() {
               </li>
               <li>
                 <Link
-                  to="/terms-and-conditions"
+                  to="/shop/terms"
                   className="text-sm text-gray-600 hover:text-blue-600 transition-colors duration-300"
                 >
                   Terms & Conditions
@@ -55,7 +55,7 @@ export default function ShoppingFooter() {
               </li>
               <li>
                 <Link
-                  to="/contact"
+                  to="/shop/contact"
                   className="text-sm text-gray-600 hover:text-blue-600 transition-colors duration-300"
                 >
                   Contact Us
