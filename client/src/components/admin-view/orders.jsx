@@ -79,43 +79,48 @@ function AdminOrdersView() {
           </TableHeader>
           <TableBody>
             {filteredOrders.length > 0 ? (
-              filteredOrders.map((orderItem) => (
-                <TableRow key={orderItem?._id}>
-                  <TableCell>{orderItem?._id}</TableCell>
-                  <TableCell>{orderItem?.addressInfo?.city}</TableCell>
-                  <TableCell>{orderItem?.orderDate.split("T")[0]}</TableCell>
-                  <TableCell>
-                    <Badge
-                      className={`py-1 px-3 ${
-                        orderItem?.orderStatus === "confirmed"
-                          ? "bg-green-500"
-                          : orderItem?.orderStatus === "rejected"
-                          ? "bg-red-600"
-                          : "bg-black text-white hover:text-black"
-                      }`}
-                    >
-                      {orderItem?.orderStatus}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>₹{orderItem?.totalAmount}</TableCell>
-                  <TableCell>
-                    <Dialog
-                      open={openDetailsDialog}
-                      onOpenChange={() => {
-                        setOpenDetailsDialog(false);
-                        dispatch(resetOrderDetails());
-                      }}
-                    >
-                      <Button
-                        onClick={() => handleFetchOrderDetails(orderItem?._id)}
+              [...filteredOrders]
+                .reverse()
+                .filter((orderItem) => orderItem.orderStatus !== "pending")
+                .map((orderItem) => (
+                  <TableRow key={orderItem?._id}>
+                    <TableCell>{orderItem?._id}</TableCell>
+                    <TableCell>{orderItem?.addressInfo?.city}</TableCell>
+                    <TableCell>{orderItem?.orderDate.split("T")[0]}</TableCell>
+                    <TableCell>
+                      <Badge
+                        className={`py-1 px-3 ${
+                          orderItem?.orderStatus === "confirmed"
+                            ? "bg-green-500"
+                            : orderItem?.orderStatus === "rejected"
+                            ? "bg-red-600"
+                            : "bg-black text-white hover:text-black"
+                        }`}
                       >
-                        View Details
-                      </Button>
-                      <AdminOrderDetailsView orderDetails={orderDetails} />
-                    </Dialog>
-                  </TableCell>
-                </TableRow>
-              ))
+                        {orderItem?.orderStatus}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>₹{orderItem?.totalAmount}</TableCell>
+                    <TableCell>
+                      <Dialog
+                        open={openDetailsDialog}
+                        onOpenChange={() => {
+                          setOpenDetailsDialog(false);
+                          dispatch(resetOrderDetails());
+                        }}
+                      >
+                        <Button
+                          onClick={() =>
+                            handleFetchOrderDetails(orderItem?._id)
+                          }
+                        >
+                          View Details
+                        </Button>
+                        <AdminOrderDetailsView orderDetails={orderDetails} />
+                      </Dialog>
+                    </TableCell>
+                  </TableRow>
+                ))
             ) : (
               <TableRow>
                 <TableCell colSpan={5} className="text-center">

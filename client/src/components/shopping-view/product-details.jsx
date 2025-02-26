@@ -16,6 +16,7 @@ import { Label } from "../ui/label";
 import StarRatingComponent from "../common/star-rating";
 import { useEffect, useState } from "react";
 import { addReview, getReviews } from "@/store/shop/review-slice";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const dispatch = useDispatch();
@@ -33,6 +34,17 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   function handleRatingChange(getRating) {
     setRating(getRating);
   }
+
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!open && searchParams.get("product")) {
+      // Reset URL to the current page
+      navigate(location.pathname);
+    }
+  }, [open, searchParams, navigate, location.pathname]);
 
   useEffect(() => {
     if (productDetails !== null) dispatch(getReviews(productDetails?._id));
@@ -125,6 +137,19 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
 
       dispatch(fetchGuestCartDetails(cart)); // ✅ Fetch updated localStorage cart
     } else {
+      const cartItem = cartItems?.items.find(
+        (item) => item.productId === getCurrentProductId
+      );
+      const currentQuantity = cartItem ? cartItem.quantity : 0;
+
+      // ✅ Check if adding one more exceeds the stock limit
+      if (currentQuantity >= totalStock) {
+        toast({
+          title: `Only ${totalStock} quantity available for this item`,
+          variant: "destructive",
+        });
+        return;
+      }
       // Logged-in User - Send API request
       dispatch(
         addToCart({

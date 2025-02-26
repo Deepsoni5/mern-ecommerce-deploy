@@ -83,7 +83,7 @@ function AdminDispatchOrders() {
           </TableHeader>
           <TableBody>
             {deliveredOrders.length > 0 ? (
-              deliveredOrders.map((orderItem) => (
+              [...deliveredOrders].reverse().map((orderItem) => (
                 <TableRow key={orderItem?._id}>
                   <TableCell>{orderItem?._id}</TableCell>
                   <TableCell>{orderItem?.addressInfo?.city}</TableCell>

@@ -83,7 +83,7 @@ function AdminConfirmOrders() {
           </TableHeader>
           <TableBody>
             {confirmedOrders.length > 0 ? (
-              confirmedOrders.map((orderItem) => (
+              [...confirmedOrders].reverse().map((orderItem) => (
                 <TableRow key={orderItem?._id}>
                   <TableCell>{orderItem?._id}</TableCell>
                   <TableCell>{orderItem?.addressInfo?.city}</TableCell>

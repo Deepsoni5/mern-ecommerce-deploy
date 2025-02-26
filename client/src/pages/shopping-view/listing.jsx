@@ -39,6 +39,7 @@ function ShoppingListing() {
 
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const categorySearchParam = searchParams.get("category");
+  const [searchParams1, setSearchParams1] = useSearchParams();
 
   function createSearchParamsHelper(filterParams) {
     const queryParams = [];
@@ -60,7 +61,15 @@ function ShoppingListing() {
 
   function handleGetProductDetails(getCurrentProductId) {
     dispatch(fetchProductDetails(getCurrentProductId));
+    setSearchParams1({ product: getCurrentProductId });
   }
+
+  useEffect(() => {
+    const productIdFromURL = searchParams.get("product");
+    if (productIdFromURL) {
+      dispatch(fetchProductDetails(productIdFromURL));
+    }
+  }, [searchParams1, dispatch]);
 
   function handleFilter(getSectionId, getCurrentOption) {
     let cpyFilters = { ...filters };
@@ -165,6 +174,19 @@ function ShoppingListing() {
 
       dispatch(fetchGuestCartDetails(cart)); // ✅ Fetch updated localStorage cart
     } else {
+      const cartItem = cartItems?.items.find(
+        (item) => item.productId === getCurrentProductId
+      );
+      const currentQuantity = cartItem ? cartItem.quantity : 0;
+
+      // ✅ Check if adding one more exceeds the stock limit
+      if (currentQuantity >= totalStock) {
+        toast({
+          title: `Only ${totalStock} quantity available for this item`,
+          variant: "destructive",
+        });
+        return;
+      }
       // Logged-in User - Send API request
       dispatch(
         addToCart({

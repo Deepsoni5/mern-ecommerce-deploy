@@ -139,9 +139,10 @@ function UserCartItemsContent({ cartItem }) {
           className="w-16 h-16 sm:w-20 sm:h-20 rounded object-cover flex-shrink-0"
         />
         <div className="flex-1 min-w-0">
-          <h3 className="font-extrabold text-sm sm:text-base truncate">
+          <h3 className="font-extrabold text-sm sm:text-base truncate break-words max-w-[150px] sm:max-w-[200px]">
             {cartItem?.title}
           </h3>
+
           <div className="flex items-center gap-2 mt-2">
             <Button
               variant="outline"

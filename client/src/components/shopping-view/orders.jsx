@@ -69,59 +69,66 @@ function ShoppingOrders() {
           </TableHeader>
           <TableBody>
             {orderList && orderList.length > 0
-              ? orderList.map((orderItem) => (
-                  <TableRow key={orderItem._id}>
-                    <TableCell>{orderItem?._id}</TableCell>
-                    <TableCell>{orderItem?.orderDate.split("T")[0]}</TableCell>
-                    <TableCell>
-                      <Badge
-                        className={`py-2 px-3 ${
-                          orderItem?.orderStatus === "confirmed"
-                            ? "bg-green-500"
-                            : orderItem?.orderStatus === "rejected"
-                            ? "bg-red-600"
-                            : "bg-black text-white hover:text-black"
-                        }`}
-                      >
-                        {orderItem?.orderStatus}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>₹{orderItem?.totalAmount}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        className="p-2 text-green-600"
-                        onClick={() =>
-                          handleWhatsAppFeedback(
-                            orderItem?._id,
-                            orderItem?.totalAmount
-                          )
-                        }
-                      >
-                        <MessageCircle className="w-10 h-10" />
-                        <p>WhatsApp</p>
-                      </Button>
-                    </TableCell>
-                    <TableCell>
-                      <Dialog
-                        open={openDetailsDialog}
-                        onOpenChange={() => {
-                          setOpenDetailsDialog(false);
-                          dispatch(resetOrderDetails());
-                        }}
-                      >
+              ? [...orderList]
+                  .reverse()
+                  .filter((orderItem) => orderItem.orderStatus !== "pending")
+                  .map((orderItem) => (
+                    <TableRow key={orderItem._id}>
+                      <TableCell>{orderItem?._id}</TableCell>
+                      <TableCell>
+                        {orderItem?.orderDate.split("T")[0]}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={`py-2 px-3 ${
+                            orderItem?.orderStatus === "confirmed"
+                              ? "bg-green-500"
+                              : orderItem?.orderStatus === "rejected"
+                              ? "bg-red-600"
+                              : "bg-black text-white hover:text-black"
+                          }`}
+                        >
+                          {orderItem?.orderStatus}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>₹{orderItem?.totalAmount}</TableCell>
+                      <TableCell>
                         <Button
+                          variant="ghost"
+                          className="p-2 text-green-600"
                           onClick={() =>
-                            handleFetchOrderDetails(orderItem?._id)
+                            handleWhatsAppFeedback(
+                              orderItem?._id,
+                              orderItem?.totalAmount
+                            )
                           }
                         >
-                          View Details
+                          <MessageCircle className="w-10 h-10" />
+                          <p>WhatsApp</p>
                         </Button>
-                        <ShoppingOrderDetailsView orderDetails={orderDetails} />
-                      </Dialog>
-                    </TableCell>
-                  </TableRow>
-                ))
+                      </TableCell>
+                      <TableCell>
+                        <Dialog
+                          open={openDetailsDialog}
+                          onOpenChange={() => {
+                            setOpenDetailsDialog(false);
+                            dispatch(resetOrderDetails());
+                          }}
+                        >
+                          <Button
+                            onClick={() =>
+                              handleFetchOrderDetails(orderItem?._id)
+                            }
+                          >
+                            View Details
+                          </Button>
+                          <ShoppingOrderDetailsView
+                            orderDetails={orderDetails}
+                          />
+                        </Dialog>
+                      </TableCell>
+                    </TableRow>
+                  ))
               : null}
           </TableBody>
         </Table>

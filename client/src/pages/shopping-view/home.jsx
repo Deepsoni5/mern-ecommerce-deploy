@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import {
   fetchAllFilteredProducts,
@@ -178,6 +178,7 @@ function ShoppingHome() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { featureImageList } = useSelector((state) => state.commonFeature);
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -270,7 +271,10 @@ function ShoppingHome() {
 
   function handleGetProductDetails(getCurrentProductId) {
     dispatch(fetchProductDetails(getCurrentProductId));
+    setSearchParams({ product: getCurrentProductId });
   }
+
+  const { cartItems } = useSelector((state) => state.shopCart);
 
   function handleAddtoCart(getCurrentProductId) {
     // ✅ Find the product in productList to get its stock
@@ -317,6 +321,19 @@ function ShoppingHome() {
 
       dispatch(fetchGuestCartDetails(cart)); // ✅ Fetch updated localStorage cart
     } else {
+      const cartItem = cartItems?.items.find(
+        (item) => item.productId === getCurrentProductId
+      );
+      const currentQuantity = cartItem ? cartItem.quantity : 0;
+
+      // ✅ Check if adding one more exceeds the stock limit
+      if (currentQuantity >= totalStock) {
+        toast({
+          title: `Only ${totalStock} quantity available for this item`,
+          variant: "destructive",
+        });
+        return;
+      }
       // Logged-in User - Send API request
       dispatch(
         addToCart({
@@ -354,6 +371,13 @@ function ShoppingHome() {
   useEffect(() => {
     if (productDetails !== null) setOpenDetailsDialog(true);
   }, [productDetails]);
+
+  useEffect(() => {
+    const productIdFromURL = searchParams.get("product");
+    if (productIdFromURL) {
+      dispatch(fetchProductDetails(productIdFromURL));
+    }
+  }, [searchParams, dispatch]);
 
   useEffect(() => {
     dispatch(getFeatureImages());
