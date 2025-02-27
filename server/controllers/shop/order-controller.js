@@ -39,7 +39,15 @@ const createOrder = async (req, res) => {
     }
     const newlyCreatedOrder = new Order({
       userId,
-      cartItems,
+      cartId,
+      cartItems: cartItems.map((item) => ({
+        productId: item.productId,
+        title: item.title,
+        image: item.image,
+        price: item.price,
+        quantity: item.quantity,
+        selectedModels: item.selectedModels || {}, // ✅ Added this
+      })),
       addressInfo,
       orderStatus,
       paymentMethod,
@@ -50,7 +58,6 @@ const createOrder = async (req, res) => {
       razorpayOrderId: order.id,
       razorpayPaymentId,
       razorpaySignature,
-      cartId,
     });
 
     await newlyCreatedOrder.save();

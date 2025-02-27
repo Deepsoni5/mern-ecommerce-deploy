@@ -54,9 +54,9 @@ const Product = require("../../models/Product");
 
 const addToCart = async (req, res) => {
   try {
-    const { userId, productId, quantity } = req.body;
+    const { userId, productId, quantity, selectedModels } = req.body;
 
-    if (!productId || quantity <= 0) {
+    if (!productId || quantity < 1) {
       return res
         .status(400)
         .json({ success: false, message: "Invalid product data!" });
@@ -79,9 +79,35 @@ const addToCart = async (req, res) => {
     );
 
     if (findProductIndex === -1) {
-      cart.items.push({ productId, quantity });
+      // ✅ Add new product with selected models
+      cart.items.push({
+        productId,
+        quantity,
+        selectedModels: selectedModels || [],
+      });
     } else {
+      // ✅ Update product quantity
       cart.items[findProductIndex].quantity += quantity;
+
+      if (selectedModels && selectedModels.length > 0) {
+        let existingModels = cart.items[findProductIndex].selectedModels;
+
+        selectedModels.forEach((newModel) => {
+          const existingModelIndex = existingModels.findIndex(
+            (m) => m.modelName === newModel.modelName
+          );
+
+          if (existingModelIndex !== -1) {
+            // ✅ If model already exists, update its quantity
+            existingModels[existingModelIndex].quantity += newModel.quantity;
+          } else {
+            // ✅ If model does not exist, add it
+            existingModels.push(newModel);
+          }
+        });
+
+        cart.items[findProductIndex].selectedModels = existingModels;
+      }
     }
 
     await cart.save();
@@ -154,6 +180,7 @@ const fetchCartItems = async (req, res) => {
       });
     }
 
+    // ✅ Filter out invalid product items
     const validItems = cart.items.filter(
       (productItem) => productItem.productId
     );
@@ -163,6 +190,7 @@ const fetchCartItems = async (req, res) => {
       await cart.save();
     }
 
+    // ✅ Fix: Convert `selectedModels` from Mongoose objects to plain JavaScript objects
     const populateCartItems = validItems.map((item) => ({
       productId: item.productId._id,
       image: item.productId.image,
@@ -170,6 +198,11 @@ const fetchCartItems = async (req, res) => {
       price: item.productId.price,
       salePrice: item.productId.salePrice,
       quantity: item.quantity,
+      selectedModels: item.selectedModels.map((model) => ({
+        modelName: model.modelName,
+        quantity: model.quantity,
+        _id: model._id.toString(),
+      })), // ✅ Convert to plain objects
     }));
 
     res.status(200).json({

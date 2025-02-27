@@ -24,13 +24,15 @@ function UserCartWrapper({ cartItems, setOpenCartSheet }) {
         )
       : 0;
 
+  console.log(cartItems);
+
   return (
     <SheetContent className="sm:max-w-md bg-white">
       <SheetHeader>
         <SheetTitle>Your Cart</SheetTitle>
       </SheetHeader>
 
-      <div className="mt-8 space-y-4">
+      <div className="mt-8 overflow-y-auto max-h-[70vh] space-y-4">
         {cartItems && cartItems?.length > 0 ? (
           cartItems.map((item) => (
             <UserCartItemsContent key={item.productId} cartItem={item} />

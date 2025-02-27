@@ -114,6 +114,14 @@ export const addProductFormElements = [
     type: "number",
     placeholder: "Enter total stock",
   },
+  {
+    label: "Available Models", // New Field for models
+    name: "models",
+    componentType: "input",
+    type: "text",
+    placeholder:
+      "Enter models separated by commas (e.g., iPhone 15, iPhone 16) or write n/a if you dont want too",
+  },
 ];
 
 export const shoppingViewHeaderMenuItems = [

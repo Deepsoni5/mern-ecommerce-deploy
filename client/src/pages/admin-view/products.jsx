@@ -46,6 +46,7 @@ function AdminProducts() {
   const dispatch = useDispatch();
   function onSubmit(event) {
     event.preventDefault();
+
     currentEditedId !== null
       ? dispatch(
           editProduct({
@@ -53,6 +54,15 @@ function AdminProducts() {
             formData: {
               ...formData,
               image: uploadedImageUrl,
+              ...(formData.models &&
+              formData.models.trim().toLowerCase() !== "n/a"
+                ? {
+                    models: formData.models
+                      .split(",")
+                      .map((model) => model.trim())
+                      .filter(Boolean),
+                  }
+                : {}),
             },
           })
         ).then((data) => {
@@ -71,6 +81,15 @@ function AdminProducts() {
           addNewProduct({
             ...formData,
             image: uploadedImageUrl,
+            ...(formData.models &&
+            formData.models.trim().toLowerCase() !== "n/a"
+              ? {
+                  models: formData.models
+                    .split(",")
+                    .map((model) => model.trim())
+                    .filter(Boolean),
+                }
+              : {}),
           })
         ).then((data) => {
           if (data?.payload?.success) {

@@ -1,4 +1,4 @@
-import { StarIcon } from "lucide-react";
+import { Check, ChevronDown, StarIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent } from "../ui/dialog";
@@ -17,6 +17,7 @@ import StarRatingComponent from "../common/star-rating";
 import { useEffect, useState } from "react";
 import { addReview, getReviews } from "@/store/shop/review-slice";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const dispatch = useDispatch();
@@ -92,78 +93,116 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   //   });
   // }
 
+  const [selectedModels, setSelectedModels] = useState({});
+  const models = productDetails?.models || [];
+
+  const toggleModelSelection = (productId, model) => {
+    setSelectedModels((prevSelected) => {
+      const currentSelection = prevSelected[productId] || []; // Get models for this product
+
+      return {
+        ...prevSelected,
+        [productId]: currentSelection.includes(model)
+          ? currentSelection.filter((m) => m !== model) // Remove if already selected
+          : [...currentSelection, model], // Add if not selected
+      };
+    });
+  };
+
   function handleAddToCart(getCurrentProductId) {
-    // ✅ Find the product in productList to get its stock
     const currentProduct = productList.find(
       (product) => product._id === getCurrentProductId
     );
 
     if (!currentProduct) {
-      toast({
-        title: "Product not found in stock!",
-        variant: "destructive",
-      });
+      toast({ title: "Product not found in stock!", variant: "destructive" });
       return;
     }
 
-    // ✅ Get total stock available for the product
+    const productSelectedModels = Array.isArray(
+      selectedModels[getCurrentProductId]
+    )
+      ? selectedModels[getCurrentProductId]
+      : [];
+
+    if (currentProduct.models && currentProduct.models.length > 0) {
+      if (productSelectedModels.length === 0) {
+        toast({
+          title: "Please select a model first!",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     const totalStock = currentProduct.totalStock;
+    const quantity =
+      productSelectedModels.length > 0 ? productSelectedModels.length : 1;
 
     if (!isAuthenticated) {
-      // Guest User - Store in localStorage
+      // ✅ Guest User - Store in localStorage
       let cart = JSON.parse(localStorage.getItem("cart")) || [];
       const existingIndex = cart.findIndex(
         (item) => item.productId === getCurrentProductId
       );
 
       if (existingIndex !== -1) {
-        if (cart[existingIndex].quantity >= totalStock) {
+        let existingItem = cart[existingIndex];
+
+        // ✅ Merge new models while keeping track of quantity
+        productSelectedModels.forEach((model) => {
+          let existingModel = existingItem.selectedModels.find(
+            (m) => m.modelName === model
+          );
+          if (existingModel) {
+            existingModel.quantity += 1; // ✅ Increase quantity for the existing model
+          } else {
+            existingItem.selectedModels.push({ modelName: model, quantity: 1 });
+          }
+        });
+
+        existingItem.quantity = existingItem.selectedModels.reduce(
+          (sum, model) => sum + model.quantity,
+          0
+        );
+
+        if (existingItem.quantity > totalStock) {
           toast({
             title: `Only ${totalStock} quantity available for this item`,
             variant: "destructive",
           });
           return;
         }
-        cart[existingIndex].quantity += 1; // Increase quantity
       } else {
-        cart.push({ productId: getCurrentProductId, quantity: 1 }); // Add new item
+        cart.push({
+          productId: getCurrentProductId,
+          quantity,
+          selectedModels: productSelectedModels.map((model) => ({
+            modelName: model,
+            quantity: 1,
+          })),
+        });
       }
 
       localStorage.setItem("cart", JSON.stringify(cart));
-
-      toast({
-        title: "Product added to cart",
-      });
-
-      dispatch(fetchGuestCartDetails(cart)); // ✅ Fetch updated localStorage cart
+      toast({ title: "Product added to cart" });
+      dispatch(fetchGuestCartDetails(cart));
     } else {
-      const cartItem = cartItems?.items.find(
-        (item) => item.productId === getCurrentProductId
-      );
-      const currentQuantity = cartItem ? cartItem.quantity : 0;
-
-      // ✅ Check if adding one more exceeds the stock limit
-      if (currentQuantity >= totalStock) {
-        toast({
-          title: `Only ${totalStock} quantity available for this item`,
-          variant: "destructive",
-        });
-        return;
-      }
-      // Logged-in User - Send API request
+      // ✅ Logged-in User - Update via API
       dispatch(
         addToCart({
           userId: user?.id,
           productId: getCurrentProductId,
-          quantity: 1,
+          quantity,
+          selectedModels: productSelectedModels.map((modelName) => ({
+            modelName: modelName,
+            quantity: 1, // ✅ Ensure quantity is properly sent
+          })),
         })
       ).then((data) => {
         if (data?.payload?.success) {
-          // ✅ Check if the backend prevents over-adding (ensure backend validation too)
           dispatch(fetchCartItems(user?.id));
-          toast({
-            title: "Product added to cart",
-          });
+          toast({ title: "Product added to cart" });
         } else if (data?.payload?.error === "out_of_stock") {
           toast({
             title: `Only ${totalStock} quantity available for this item`,
@@ -173,7 +212,6 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
       });
     }
   }
-
   function handleDialogClose() {
     setOpen(false);
     dispatch(setProductDetails());
@@ -244,6 +282,55 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
               <p className="text-muted-foreground text-base sm:text-lg md:text-xl mb-3 mt-2 sm:mb-5 sm:mt-4">
                 {productDetails?.description}
               </p>
+              <label className="block text-gray-700 text-sm font-semibold mb-1">
+                {models.length > 0 ? "Select Model:" : "Model:"}
+              </label>
+
+              {models.length > 0 ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      className="flex items-center justify-between w-full p-2 border rounded-md bg-white text-gray-800 shadow-sm"
+                      type="button"
+                    >
+                      {selectedModels[productDetails._id]?.length > 0
+                        ? selectedModels[productDetails._id].join(", ")
+                        : "Select Model"}
+                      <ChevronDown className="w-4 h-4 ml-2" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-full p-2 bg-white rounded-md shadow-lg z-50"
+                    sideOffset={5}
+                  >
+                    {models.map((model, index) => (
+                      <div
+                        key={index}
+                        className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 ${
+                          selectedModels[productDetails._id]?.includes(model)
+                            ? "font-semibold text-blue-600"
+                            : "text-gray-700"
+                        }`}
+                        onClick={() =>
+                          toggleModelSelection(productDetails._id, model)
+                        }
+                        style={{ pointerEvents: "auto" }}
+                        role="button"
+                        tabIndex={0}
+                      >
+                        {selectedModels[productDetails._id]?.includes(
+                          model
+                        ) && <Check className="w-4 h-4 mr-2 text-blue-600" />}
+                        {model}
+                      </div>
+                    ))}
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <p className="p-2 border rounded-md bg-gray-100 text-gray-500">
+                  N/A
+                </p>
+              )}
             </div>
             <div className="flex items-center justify-between">
               <p

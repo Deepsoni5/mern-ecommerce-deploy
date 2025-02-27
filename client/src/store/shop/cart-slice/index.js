@@ -8,13 +8,14 @@ const initialState = {
 
 export const addToCart = createAsyncThunk(
   "cart/addToCart",
-  async ({ userId, productId, quantity }) => {
+  async ({ userId, productId, quantity, selectedModels }) => {
     const response = await axios.post(
       `${import.meta.env.VITE_API_URL}/api/shop/cart/add`,
       {
         userId,
         productId,
         quantity,
+        selectedModels,
       }
     );
 
@@ -70,6 +71,10 @@ export const fetchGuestCartDetails = createAsyncThunk(
   "cart/fetchGuestCartDetails",
   async (cartItems, { rejectWithValue }) => {
     try {
+      if (!cartItems.length) {
+        // ✅ Clear guest cart when empty
+        return []; // ✅ Stop execution, no API call
+      }
       const productIds = cartItems.map((item) => item.productId);
 
       const response = await axios.post(

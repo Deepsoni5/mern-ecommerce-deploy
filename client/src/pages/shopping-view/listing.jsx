@@ -93,114 +93,102 @@ function ShoppingListing() {
     sessionStorage.setItem("filters", JSON.stringify(cpyFilters));
   }
 
-  // function handleAddtoCart(getCurrentProductId, getTotalStock) {
-  //   let getCartItems = cartItems.items || [];
-
-  //   if (getCartItems.length) {
-  //     const indexOfCurrentItem = getCartItems.findIndex(
-  //       (item) => item.productId === getCurrentProductId
-  //     );
-  //     if (indexOfCurrentItem > -1) {
-  //       const getQuantity = getCartItems[indexOfCurrentItem].quantity;
-
-  //       if (getQuantity + 1 > getTotalStock) {
-  //         toast({
-  //           title: `Only ${getQuantity} quantity can be added for this item`,
-  //           variant: "destructive",
-  //         });
-
-  //         return;
-  //       }
-  //     }
-  //   }
-  //   dispatch(
-  //     addToCart({
-  //       userId: user?.id,
-  //       productId: getCurrentProductId,
-  //       quantity: 1,
-  //     })
-  //   ).then((data) => {
-  //     if (data?.payload?.success) {
-  //       dispatch(fetchCartItems(user?.id));
-  //       toast({
-  //         title: "Product is added to cart",
-  //       });
-  //     }
-  //   });
-  // }
+  const [selectedModels, setSelectedModels] = useState({});
 
   function handleAddtoCart(getCurrentProductId) {
-    // ✅ Find the product in productList to get its stock
     const currentProduct = productList.find(
       (product) => product._id === getCurrentProductId
     );
 
     if (!currentProduct) {
-      toast({
-        title: "Product not found in stock!",
-        variant: "destructive",
-      });
+      toast({ title: "Product not found in stock!", variant: "destructive" });
       return;
     }
 
-    // ✅ Get total stock available for the product
+    const productSelectedModels = Array.isArray(
+      selectedModels[getCurrentProductId]
+    )
+      ? selectedModels[getCurrentProductId]
+      : [];
+
+    if (currentProduct.models && currentProduct.models.length > 0) {
+      if (productSelectedModels.length === 0) {
+        toast({
+          title: "Please select a model first!",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     const totalStock = currentProduct.totalStock;
+    const quantity =
+      productSelectedModels.length > 0 ? productSelectedModels.length : 1;
 
     if (!isAuthenticated) {
-      // Guest User - Store in localStorage
+      // ✅ Guest User - Store in localStorage
       let cart = JSON.parse(localStorage.getItem("cart")) || [];
       const existingIndex = cart.findIndex(
         (item) => item.productId === getCurrentProductId
       );
 
       if (existingIndex !== -1) {
-        if (cart[existingIndex].quantity >= totalStock) {
+        let existingItem = cart[existingIndex];
+
+        // ✅ Merge new models while keeping track of quantity
+        productSelectedModels.forEach((model) => {
+          let existingModel = existingItem.selectedModels.find(
+            (m) => m.modelName === model
+          );
+          if (existingModel) {
+            existingModel.quantity += 1; // ✅ Increase quantity for the existing model
+          } else {
+            existingItem.selectedModels.push({ modelName: model, quantity: 1 });
+          }
+        });
+
+        existingItem.quantity = existingItem.selectedModels.reduce(
+          (sum, model) => sum + model.quantity,
+          0
+        );
+
+        if (existingItem.quantity > totalStock) {
           toast({
             title: `Only ${totalStock} quantity available for this item`,
             variant: "destructive",
           });
           return;
         }
-        cart[existingIndex].quantity += 1; // Increase quantity
       } else {
-        cart.push({ productId: getCurrentProductId, quantity: 1 }); // Add new item
+        cart.push({
+          productId: getCurrentProductId,
+          quantity,
+          selectedModels: productSelectedModels.map((model) => ({
+            modelName: model,
+            quantity: 1,
+          })),
+        });
       }
 
       localStorage.setItem("cart", JSON.stringify(cart));
-
-      toast({
-        title: "Product added to cart",
-      });
-
-      dispatch(fetchGuestCartDetails(cart)); // ✅ Fetch updated localStorage cart
+      toast({ title: "Product added to cart" });
+      dispatch(fetchGuestCartDetails(cart));
     } else {
-      const cartItem = cartItems?.items.find(
-        (item) => item.productId === getCurrentProductId
-      );
-      const currentQuantity = cartItem ? cartItem.quantity : 0;
-
-      // ✅ Check if adding one more exceeds the stock limit
-      if (currentQuantity >= totalStock) {
-        toast({
-          title: `Only ${totalStock} quantity available for this item`,
-          variant: "destructive",
-        });
-        return;
-      }
-      // Logged-in User - Send API request
+      // ✅ Logged-in User - Update via API
       dispatch(
         addToCart({
           userId: user?.id,
           productId: getCurrentProductId,
-          quantity: 1,
+          quantity,
+          selectedModels: productSelectedModels.map((modelName) => ({
+            modelName: modelName,
+            quantity: 1, // ✅ Ensure quantity is properly sent
+          })),
         })
       ).then((data) => {
         if (data?.payload?.success) {
-          // ✅ Check if the backend prevents over-adding (ensure backend validation too)
           dispatch(fetchCartItems(user?.id));
-          toast({
-            title: "Product added to cart",
-          });
+          toast({ title: "Product added to cart" });
         } else if (data?.payload?.error === "out_of_stock") {
           toast({
             title: `Only ${totalStock} quantity available for this item`,
@@ -278,7 +266,11 @@ function ShoppingListing() {
                 handleGetProductDetails={handleGetProductDetails}
                 key={productItem._id}
                 product={productItem}
-                handleAddtoCart={handleAddtoCart}
+                handleAddtoCart={(productId) =>
+                  handleAddtoCart(productId, selectedModels)
+                }
+                selectedModels={selectedModels} // ✅ Pass selected models
+                setSelectedModels={setSelectedModels}
               />
             ))}
           </div>

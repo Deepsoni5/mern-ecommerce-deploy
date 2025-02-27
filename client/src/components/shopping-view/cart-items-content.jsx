@@ -48,7 +48,7 @@ function UserCartItemsContent({ cartItem }) {
 
     if (newQuantity > totalStock) {
       toast({
-        title: `Only ${totalStock} quantity available for this item`,
+        title: `{Only ${totalStock} quantity available for this item}`,
         variant: "destructive",
       });
       return;
@@ -131,7 +131,7 @@ function UserCartItemsContent({ cartItem }) {
   }
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-3 sm:space-y-0 p-4 border rounded-lg">
+    <div className="overflow-y-auto flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-3 sm:space-y-0 p-4 border rounded-lg">
       <div className="flex space-x-4 items-center">
         <img
           src={cartItem?.image}
@@ -142,6 +142,15 @@ function UserCartItemsContent({ cartItem }) {
           <h3 className="font-extrabold text-sm sm:text-base truncate break-words max-w-[150px] sm:max-w-[200px]">
             {cartItem?.title}
           </h3>
+
+          {cartItem?.selectedModels && cartItem.selectedModels.length > 0 && (
+            <p className="text-xs text-gray-500 mt-1">
+              Selected Models:{" "}
+              {cartItem.selectedModels
+                .map((model) => `${model.modelName} (${model.quantity})`)
+                .join(", ")}
+            </p>
+          )}
 
           <div className="flex items-center gap-2 mt-2">
             <Button

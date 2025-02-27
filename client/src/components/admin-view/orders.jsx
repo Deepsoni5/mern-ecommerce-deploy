@@ -44,6 +44,8 @@ function AdminOrdersView() {
       )
     : orderList;
 
+  console.log(filteredOrders);
+
   return (
     <Card>
       <CardHeader>
@@ -68,6 +70,7 @@ function AdminOrdersView() {
           <TableHeader>
             <TableRow>
               <TableHead>Order ID</TableHead>
+              <TableHead>Selected Model</TableHead>
               <TableHead>City</TableHead>
               <TableHead>Order Date</TableHead>
               <TableHead>Order Status</TableHead>
@@ -85,6 +88,26 @@ function AdminOrdersView() {
                 .map((orderItem) => (
                   <TableRow key={orderItem?._id}>
                     <TableCell>{orderItem?._id}</TableCell>
+                    <TableCell>
+                      {orderItem?.cartItems?.map((cartItem, index) => (
+                        <div key={index} className="flex flex-col gap-1">
+                          <span className="font-semibold">
+                            {cartItem.title}
+                          </span>
+                          {cartItem?.selectedModels &&
+                          cartItem.selectedModels.length > 0 ? (
+                            cartItem.selectedModels.map((model, idx) => (
+                              <span key={idx} className="text-sm">
+                                {model.modelName} (x{model.quantity})
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-gray-500"></span>
+                          )}
+                        </div>
+                      ))}
+                    </TableCell>
+
                     <TableCell>{orderItem?.addressInfo?.city}</TableCell>
                     <TableCell>{orderItem?.orderDate.split("T")[0]}</TableCell>
                     <TableCell>

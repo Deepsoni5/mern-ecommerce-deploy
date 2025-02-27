@@ -32,7 +32,23 @@ const addProduct = async (req, res) => {
       price,
       salePrice,
       totalStock,
+      models,
     } = req.body;
+
+    let formattedModels;
+
+    if (Array.isArray(models)) {
+      // If it's an array, filter out empty or "n/a" values
+      formattedModels = models
+        .map((model) => model.trim().toLowerCase())
+        .filter((model) => model !== "n/a" && model !== "");
+    } else if (typeof models === "string") {
+      // If it's a string, split by commas and filter out "n/a"
+      formattedModels = models
+        .split(",")
+        .map((model) => model.trim().toLowerCase())
+        .filter((model) => model !== "n/a" && model !== "");
+    }
 
     const newlyCreatedProduct = new Product({
       image,
@@ -43,6 +59,9 @@ const addProduct = async (req, res) => {
       price,
       salePrice,
       totalStock,
+      ...(formattedModels && formattedModels.length > 0
+        ? { models: formattedModels }
+        : {}),
     });
 
     await newlyCreatedProduct.save();

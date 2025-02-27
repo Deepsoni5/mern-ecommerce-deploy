@@ -18,6 +18,12 @@ const CartSchema = new mongoose.Schema(
           required: true,
           min: 1,
         },
+        selectedModels: [
+          {
+            modelName: String,
+            quantity: Number,
+          },
+        ],
       },
     ],
   },

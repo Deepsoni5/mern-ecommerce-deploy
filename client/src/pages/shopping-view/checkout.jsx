@@ -58,6 +58,7 @@ function ShoppingCheckout() {
             ? singleCartItem?.salePrice
             : singleCartItem?.price,
         quantity: singleCartItem?.quantity,
+        selectedModels: singleCartItem?.selectedModels || {},
       })),
       addressInfo: {
         addressId: currentSelectedAddress?._id,

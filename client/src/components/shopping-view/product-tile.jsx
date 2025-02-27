@@ -6,11 +6,19 @@ import { FaShareNodes, FaWhatsapp, FaInstagram, FaCopy } from "react-icons/fa6";
 import { FaSms } from "react-icons/fa";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Check, ChevronDown } from "lucide-react";
 
 function ShoppingProductTile({
   product,
   handleGetProductDetails,
   handleAddtoCart,
+  selectedModels,
+  setSelectedModels,
 }) {
   const [showShareOptions, setShowShareOptions] = useState(false);
   const { toast } = useToast();
@@ -25,6 +33,22 @@ function ShoppingProductTile({
       description: "The product link has been copied to your clipboard.",
     });
   };
+
+  const models = product?.models || [];
+
+  const toggleModelSelection = (productId, model) => {
+    setSelectedModels((prevSelected) => {
+      const currentSelection = prevSelected[productId] || []; // Get models for this product
+
+      return {
+        ...prevSelected,
+        [productId]: currentSelection.includes(model)
+          ? currentSelection.filter((m) => m !== model) // Remove if already selected
+          : [...currentSelection, model], // Add if not selected
+      };
+    });
+  };
+
   return (
     <Card className="w-full max-w-sm mx-auto cursor-pointer rounded-xl shadow-lg border-none p-3 relative">
       <button
@@ -111,6 +135,55 @@ function ShoppingProductTile({
             <span>{product?.category}</span>
             <span>{product?.brand}</span>
           </div>
+          <div className="mb-3">
+            <label className="block text-gray-700 text-sm font-semibold mb-1">
+              {models.length > 0 ? "Select Model:" : "Model:"}
+            </label>
+
+            {models.length > 0 ? (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    className="flex items-center justify-between w-full p-2 border rounded-md bg-white text-gray-800 shadow-sm"
+                    onClick={(e) => e.stopPropagation()} // Prevents click from bubbling up
+                  >
+                    {selectedModels[product._id]?.length > 0
+                      ? selectedModels[product._id].join(", ")
+                      : "Select Model"}
+                    <ChevronDown className="w-4 h-4 ml-2" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-full p-2 bg-white rounded-md shadow-lg"
+                  onClick={(e) => e.stopPropagation()} // Prevents dialog from closing
+                >
+                  {models.map((model, index) => (
+                    <div
+                      key={index}
+                      className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 ${
+                        selectedModels[product._id]?.includes(model)
+                          ? "font-semibold text-blue-600"
+                          : "text-gray-700"
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleModelSelection(product._id, model);
+                      }}
+                    >
+                      {selectedModels[product._id]?.includes(model) && (
+                        <Check className="w-4 h-4 mr-2 text-blue-600" />
+                      )}
+                      {model}
+                    </div>
+                  ))}
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <p className="p-2 border rounded-md bg-gray-100 text-gray-500">
+                N/A
+              </p>
+            )}
+          </div>
           <div className="flex justify-between items-center mb-2">
             <span
               className={`${
@@ -136,7 +209,9 @@ function ShoppingProductTile({
           </Button>
         ) : (
           <Button
-            onClick={() => handleAddtoCart(product?._id, product?.totalStock)}
+            onClick={() =>
+              handleAddtoCart(product?._id, selectedModels, product?.totalStock)
+            }
             className="w-full rounded-lg"
           >
             Add to cart
