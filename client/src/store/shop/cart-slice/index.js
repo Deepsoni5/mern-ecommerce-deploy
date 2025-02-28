@@ -109,13 +109,14 @@ export const deleteCartItem = createAsyncThunk(
 
 export const updateCartQuantity = createAsyncThunk(
   "cart/updateCartQuantity",
-  async ({ userId, productId, quantity }) => {
+  async ({ userId, productId, quantity, selectedModels }) => {
     const response = await axios.put(
       `${import.meta.env.VITE_API_URL}/api/shop/cart/update-cart`,
       {
         userId,
         productId,
         quantity,
+        selectedModels: selectedModels || null, // Send selectedModels if they exist
       }
     );
 

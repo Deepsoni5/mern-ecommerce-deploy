@@ -251,8 +251,9 @@ module.exports = { fetchCartProductDetails };
 
 const updateCartItemQty = async (req, res) => {
   try {
-    const { userId, productId, quantity } = req.body;
+    const { userId, productId, quantity, selectedModels } = req.body;
 
+    // Validate required fields
     if (!userId || !productId || quantity <= 0) {
       return res.status(400).json({
         success: false,
@@ -260,6 +261,7 @@ const updateCartItemQty = async (req, res) => {
       });
     }
 
+    // Find the user's cart
     const cart = await Cart.findOne({ userId });
     if (!cart) {
       return res.status(404).json({
@@ -268,6 +270,7 @@ const updateCartItemQty = async (req, res) => {
       });
     }
 
+    // Find the index of the product in the cart
     const findCurrentProductIndex = cart.items.findIndex(
       (item) => item.productId.toString() === productId
     );
@@ -275,18 +278,26 @@ const updateCartItemQty = async (req, res) => {
     if (findCurrentProductIndex === -1) {
       return res.status(404).json({
         success: false,
-        message: "Cart item not present !",
+        message: "Cart item not present!",
       });
     }
 
+    // Update the quantity and selectedModels (if provided)
     cart.items[findCurrentProductIndex].quantity = quantity;
+    if (selectedModels) {
+      cart.items[findCurrentProductIndex].selectedModels = selectedModels;
+    }
+
+    // Save the updated cart
     await cart.save();
 
+    // Populate the product details
     await cart.populate({
       path: "items.productId",
       select: "image title price salePrice",
     });
 
+    // Format the cart items for the response
     const populateCartItems = cart.items.map((item) => ({
       productId: item.productId ? item.productId._id : null,
       image: item.productId ? item.productId.image : null,
@@ -294,8 +305,10 @@ const updateCartItemQty = async (req, res) => {
       price: item.productId ? item.productId.price : null,
       salePrice: item.productId ? item.productId.salePrice : null,
       quantity: item.quantity,
+      selectedModels: item.selectedModels || null, // Include selectedModels in the response
     }));
 
+    // Send the response
     res.status(200).json({
       success: true,
       data: {
@@ -307,7 +320,7 @@ const updateCartItemQty = async (req, res) => {
     console.log(error);
     res.status(500).json({
       success: false,
-      message: "Error",
+      message: "Error updating cart item",
     });
   }
 };

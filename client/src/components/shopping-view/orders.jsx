@@ -12,7 +12,9 @@ import {
 } from "../ui/table";
 import ShoppingOrderDetailsView from "./order-details";
 import { useDispatch, useSelector } from "react-redux";
+import { useToast } from "@/hooks/use-toast";
 import {
+  cancelOrder,
   getAllOrdersByUserId,
   getOrderDetails,
   resetOrderDetails,
@@ -25,7 +27,7 @@ function ShoppingOrders() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { orderList, orderDetails } = useSelector((state) => state.shopOrder);
-
+  const { toast } = useToast();
   function handleFetchOrderDetails(getId) {
     dispatch(getOrderDetails(getId));
   }
@@ -48,6 +50,16 @@ function ShoppingOrders() {
     );
   }
 
+  function handleCancelOrder(orderId) {
+    dispatch(cancelOrder(orderId)).then((data) => {
+      if (data?.payload?.success) {
+        toast({
+          title: "Order cancelled successfully",
+        });
+      }
+    });
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -63,6 +75,7 @@ function ShoppingOrders() {
               <TableHead>Order Status</TableHead>
               <TableHead>Order Price</TableHead>
               <TableHead>Feedback</TableHead>
+              <TableHead>Actions</TableHead>
               <TableHead>
                 <span className="sr-only">Details</span>
               </TableHead>
@@ -105,6 +118,8 @@ function ShoppingOrders() {
                               ? "bg-green-500"
                               : orderItem?.orderStatus === "rejected"
                               ? "bg-red-600"
+                              : orderItem?.orderStatus === "cancelled"
+                              ? "bg-orange-500" // Orange for cancelled orders
                               : "bg-black text-white hover:text-black"
                           }`}
                         >
@@ -126,6 +141,29 @@ function ShoppingOrders() {
                           <MessageCircle className="w-10 h-10" />
                           <p>WhatsApp</p>
                         </Button>
+                      </TableCell>
+                      <TableCell>
+                        {orderItem?.orderStatus === "confirmed" && (
+                          <Button
+                            variant="outline"
+                            className="bg-orange-500 text-white hover:bg-orange-600 hover:text-white transition-colors duration-200 flex items-center gap-2 rounded-2xl"
+                            onClick={() => handleCancelOrder(orderItem?._id)}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            Cancel Order
+                          </Button>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Dialog

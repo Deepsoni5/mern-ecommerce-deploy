@@ -137,10 +137,10 @@ function ShoppingProductTile({
           </div>
           <div className="mb-3">
             <label className="block text-gray-700 text-sm font-semibold mb-1">
-              {models.length > 0 ? "Select Model:" : "Model:"}
+              {models.length > 0 && "Select Model:"}
             </label>
 
-            {models.length > 0 ? (
+            {models.length > 0 && (
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -178,10 +178,6 @@ function ShoppingProductTile({
                   ))}
                 </PopoverContent>
               </Popover>
-            ) : (
-              <p className="p-2 border rounded-md bg-gray-100 text-gray-500">
-                N/A
-              </p>
             )}
           </div>
           <div className="flex justify-between items-center mb-2">

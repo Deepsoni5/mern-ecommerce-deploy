@@ -110,6 +110,7 @@ const editProduct = async (req, res) => {
       price,
       salePrice,
       totalStock,
+      models, // Add models to the destructured fields
     } = req.body;
 
     let findProduct = await Product.findById(id);
@@ -120,6 +121,7 @@ const editProduct = async (req, res) => {
       });
     }
 
+    // Update the product fields
     findProduct.title = title || findProduct.title;
     findProduct.description = description || findProduct.description;
     findProduct.category = category || findProduct.category;
@@ -130,7 +132,14 @@ const editProduct = async (req, res) => {
     findProduct.totalStock = totalStock || findProduct.totalStock;
     findProduct.image = image || findProduct.image;
 
+    // Update the models field if it exists in the request
+    if (models) {
+      findProduct.models = models; // Ensure models is an array
+    }
+
+    // Save the updated product
     await findProduct.save();
+
     res.status(200).json({
       success: true,
       data: findProduct,
@@ -139,7 +148,7 @@ const editProduct = async (req, res) => {
     console.log(e);
     res.status(500).json({
       success: false,
-      message: "Error occured",
+      message: "Error occurred",
     });
   }
 };

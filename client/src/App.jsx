@@ -28,6 +28,7 @@ import ShoppingContact from "./pages/shopping-view/contact";
 import AdminInquiries from "./pages/admin-view/inquiries";
 import AdminDispatchOrders from "./pages/admin-view/dispatch-orders";
 import AdminConfirmOrders from "./pages/admin-view/confirm-orders";
+import AdminCancelOrders from "./pages/admin-view/cancel-orders";
 
 function ProtectedRoute({ element }) {
   const { isAuthenticated } = useSelector((state) => state.auth);
@@ -77,6 +78,7 @@ function App() {
             <Route path="orders" element={<AdminOrders />} />
             <Route path="dispatch-orders" element={<AdminDispatchOrders />} />
             <Route path="confirm-orders" element={<AdminConfirmOrders />} />
+            <Route path="cancel-orders" element={<AdminCancelOrders />} />
             <Route path="features" element={<AdminFeatures />} />
             <Route path="inquiries" element={<AdminInquiries />} />
           </Route>

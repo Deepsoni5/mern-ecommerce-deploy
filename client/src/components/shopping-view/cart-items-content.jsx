@@ -17,17 +17,45 @@ function UserCartItemsContent({ cartItem }) {
   const { productList } = useSelector((state) => state.shopProducts);
 
   function handleUpdateQuantity(getCartItem, typeOfAction) {
-    let newQuantity =
-      typeOfAction === "plus"
-        ? getCartItem?.quantity + 1
-        : getCartItem?.quantity - 1;
+    // Initialize updated quantity and models
+    let newQuantity = getCartItem?.quantity || 1; // Default to 1 if quantity is undefined
+    let updatedModels =
+      getCartItem?.selectedModels && getCartItem.selectedModels.length > 0
+        ? [...getCartItem.selectedModels]
+        : null; // Only initialize if models exist
 
-    if (newQuantity <= 0) {
-      toast({
-        title: "Quantity must be at least 1",
-        variant: "destructive",
-      });
-      return;
+    if (typeOfAction === "plus") {
+      if (updatedModels) {
+        // If models exist, increment each model's quantity
+        updatedModels = updatedModels.map((model) => ({
+          ...model,
+          quantity: model.quantity + 1,
+        }));
+        // Calculate new total quantity
+        newQuantity = updatedModels.reduce(
+          (total, model) => total + model.quantity,
+          0
+        );
+      } else {
+        // If no models, increment product quantity directly
+        newQuantity += 1;
+      }
+    } else if (typeOfAction === "minus") {
+      if (updatedModels) {
+        // If models exist, decrement each model's quantity (but not below 1)
+        updatedModels = updatedModels.map((model) => ({
+          ...model,
+          quantity: Math.max(1, model.quantity - 1),
+        }));
+        // Calculate new total quantity
+        newQuantity = updatedModels.reduce(
+          (total, model) => total + model.quantity,
+          0
+        );
+      } else {
+        // If no models, decrement product quantity directly (but not below 1)
+        newQuantity = Math.max(1, newQuantity - 1);
+      }
     }
 
     // ✅ Find the product in productList to get its stock
@@ -48,7 +76,7 @@ function UserCartItemsContent({ cartItem }) {
 
     if (newQuantity > totalStock) {
       toast({
-        title: `{Only ${totalStock} quantity available for this item}`,
+        title: `Only ${totalStock} quantity available for this item`,
         variant: "destructive",
       });
       return;
@@ -63,7 +91,12 @@ function UserCartItemsContent({ cartItem }) {
       );
 
       if (index !== -1) {
-        cart[index].quantity = newQuantity;
+        // Update the cart item with new quantity and models (if applicable)
+        cart[index] = {
+          ...cart[index],
+          quantity: newQuantity,
+          selectedModels: updatedModels || cart[index].selectedModels,
+        };
       }
 
       // Save updated cart
@@ -77,13 +110,18 @@ function UserCartItemsContent({ cartItem }) {
       dispatch(fetchGuestCartDetails(cart));
     } else {
       // 👤 Logged-in User - Update in backend
-      dispatch(
-        updateCartQuantity({
-          userId: user?.id,
-          productId: getCartItem?.productId,
-          quantity: newQuantity,
-        })
-      ).then((data) => {
+      const payload = {
+        userId: user?.id,
+        productId: getCartItem?.productId,
+        quantity: newQuantity,
+      };
+
+      // Only include selectedModels if they exist
+      if (updatedModels) {
+        payload.selectedModels = updatedModels;
+      }
+
+      dispatch(updateCartQuantity(payload)).then((data) => {
         if (data?.payload?.success) {
           toast({
             title: "Cart item updated successfully",
@@ -95,7 +133,6 @@ function UserCartItemsContent({ cartItem }) {
       });
     }
   }
-
   function handleCartItemDelete(getCartItem) {
     if (!isAuthenticated) {
       // 🛒 Guest User - Remove from localStorage

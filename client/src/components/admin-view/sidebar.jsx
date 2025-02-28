@@ -6,6 +6,7 @@ import {
   MessageSquare,
   ShoppingBasket,
   Truck,
+  XCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
@@ -40,6 +41,12 @@ const adminSidebarMenuItems = [
     label: "Confirm Orders",
     path: "/admin/confirm-orders",
     icon: <CheckCircle />, // CheckCircle icon for confirmation
+  },
+  {
+    id: "cancel-orders",
+    label: "Cancel Orders",
+    path: "/admin/cancel-orders",
+    icon: <XCircle />, // XCircle icon for cancelled orders
   },
   {
     id: "inquiries",

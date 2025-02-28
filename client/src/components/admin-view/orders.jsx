@@ -112,11 +112,13 @@ function AdminOrdersView() {
                     <TableCell>{orderItem?.orderDate.split("T")[0]}</TableCell>
                     <TableCell>
                       <Badge
-                        className={`py-1 px-3 ${
+                        className={`py-2 px-3 ${
                           orderItem?.orderStatus === "confirmed"
                             ? "bg-green-500"
                             : orderItem?.orderStatus === "rejected"
                             ? "bg-red-600"
+                            : orderItem?.orderStatus === "cancelled"
+                            ? "bg-orange-500" // Orange for cancelled orders
                             : "bg-black text-white hover:text-black"
                         }`}
                       >

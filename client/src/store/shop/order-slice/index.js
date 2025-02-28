@@ -21,6 +21,16 @@ export const createNewOrder = createAsyncThunk(
   }
 );
 
+export const cancelOrder = createAsyncThunk(
+  "/order/cancelOrder",
+  async (orderId) => {
+    const response = await axios.put(
+      `${import.meta.env.VITE_API_URL}/api/shop/order/cancel/${orderId}`
+    );
+    return response.data;
+  }
+);
+
 export const getAllOrdersByUserId = createAsyncThunk(
   "/order/getAllOrdersByUserId",
   async (userId) => {
@@ -90,6 +100,22 @@ const shoppingOrderSlice = createSlice({
       .addCase(getOrderDetails.rejected, (state) => {
         state.isLoading = false;
         state.orderDetails = null;
+      })
+      .addCase(cancelOrder.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(cancelOrder.fulfilled, (state, action) => {
+        state.isLoading = false;
+        // Update the order status in the orderList
+        const updatedOrderList = state.orderList.map((order) =>
+          order._id === action.payload.data._id
+            ? { ...order, orderStatus: "cancelled" }
+            : order
+        );
+        state.orderList = updatedOrderList;
+      })
+      .addCase(cancelOrder.rejected, (state) => {
+        state.isLoading = false;
       });
   },
 });
