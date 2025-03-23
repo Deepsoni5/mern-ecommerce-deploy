@@ -37,7 +37,7 @@ import {
   fetchGuestCartDetails,
 } from "@/store/shop/cart-slice";
 
-function MenuItems() {
+function MenuItems({ setIsOpen }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -59,6 +59,11 @@ function MenuItems() {
           new URLSearchParams(`?category=${getCurrentMenuItem.id}`)
         )
       : navigate(getCurrentMenuItem.path);
+
+    // ✅ Close sidebar after navigation
+    if (setIsOpen) {
+      setIsOpen(false);
+    }
   }
 
   return (
@@ -200,6 +205,7 @@ function ShoppingHeader() {
       }
     }
   }, [dispatch, user?.id, location.pathname]);
+  const [isOpen, setIsOpen] = useState(false);
 
   const navigate = useNavigate();
   return (
@@ -231,15 +237,19 @@ function ShoppingHeader() {
             </span>
             <span className="sr-only">User Cart</span>
           </Button>
-          <Sheet>
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsOpen(true)}
+              >
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Toggle Header Menu</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-full max-w-xs bg-white">
-              <MenuItems />
+              <MenuItems setIsOpen={setIsOpen} />
               <HeaderRightContent />
             </SheetContent>
           </Sheet>

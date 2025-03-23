@@ -14,7 +14,7 @@ async function imageUploadUtil(file) {
     resource_type: "auto",
   });
 
-  return result;
+  return result?.url;
 }
 
 const upload = multer({ storage });

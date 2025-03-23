@@ -44,7 +44,7 @@ function AdminOrdersView() {
       )
     : orderList;
 
-  console.log(filteredOrders);
+  
 
   return (
     <Card>

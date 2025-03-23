@@ -16,6 +16,8 @@ function UserCartItemsContent({ cartItem }) {
   const { cartItems } = useSelector((state) => state.shopCart);
   const { productList } = useSelector((state) => state.shopProducts);
 
+  console.log(cartItem);
+
   function handleUpdateQuantity(getCartItem, typeOfAction) {
     // Initialize updated quantity and models
     let newQuantity = getCartItem?.quantity || 1; // Default to 1 if quantity is undefined
@@ -171,7 +173,7 @@ function UserCartItemsContent({ cartItem }) {
     <div className="overflow-y-auto flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-3 sm:space-y-0 p-4 border rounded-lg">
       <div className="flex space-x-4 items-center">
         <img
-          src={cartItem?.image}
+          src={cartItem?.image?.[cartItem.image.length - 1]}
           alt={cartItem?.title}
           className="w-16 h-16 sm:w-20 sm:h-20 rounded object-cover flex-shrink-0"
         />

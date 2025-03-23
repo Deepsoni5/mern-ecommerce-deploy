@@ -2,20 +2,22 @@ const { imageUploadUtil } = require("../../helpers/cloudinary");
 const Product = require("../../models/Product");
 const handleImageUpload = async (req, res) => {
   try {
-    const b64 = Buffer.from(req.file.buffer).toString("base64");
-    const url = "data:" + req.file.mimetype + ";base64," + b64;
-    const result = await imageUploadUtil(url);
+    if (!Array.isArray(req.files) || req.files.length === 0) {
+      return res.json({ success: false, message: "No images uploaded" });
+    }
 
-    res.json({
-      success: true,
-      result,
-    });
+    const uploadedUrls = await Promise.all(
+      req.files.map(async (file) => {
+        const b64 = Buffer.from(file.buffer).toString("base64");
+        const url = "data:" + file.mimetype + ";base64," + b64;
+        return await imageUploadUtil(url);
+      })
+    );
+
+    res.json({ success: true, result: uploadedUrls });
   } catch (error) {
-    console.log(error);
-    res.json({
-      success: false,
-      message: "Error occured",
-    });
+    console.error(error);
+    res.json({ success: false, message: "Error occurred" });
   }
 };
 

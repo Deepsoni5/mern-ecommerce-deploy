@@ -12,11 +12,17 @@ function AdminProductTile({
     <Card className="w-full max-w-sm mx-auto">
       <div>
         <div className="relative h-60 overflow-hidden">
-          <img
-            src={product?.image}
-            alt={product?.title}
-            className="w-full h-full object-contain object-center transition-transform duration-300 ease-in-out hover:scale-105"
-          />
+          {product?.image?.length > 0 && (
+            <img
+              src={
+                Array.isArray(product?.image)
+                  ? product.image[product.image.length - 1]
+                  : product?.image
+              }
+              alt={product?.title}
+              className="w-full h-full object-contain object-center transition-transform duration-300 ease-in-out hover:scale-105"
+            />
+          )}
         </div>
         <CardContent>
           <h2 className="text-xl font-bold mb-2 mt-2">{product?.title}</h2>

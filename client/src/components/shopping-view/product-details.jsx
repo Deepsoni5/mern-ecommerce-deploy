@@ -1,7 +1,7 @@
-import { Check, ChevronDown, StarIcon } from "lucide-react";
+import { Check, ChevronDown, StarIcon, X } from "lucide-react";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Button } from "../ui/button";
-import { Dialog, DialogContent } from "../ui/dialog";
+import { Dialog, DialogClose, DialogContent } from "../ui/dialog";
 import { Separator } from "../ui/separator";
 import { Input } from "../ui/input";
 import { useDispatch, useSelector } from "react-redux";
@@ -28,6 +28,11 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const { productList, rateProductList } = useSelector(
     (state) => state.shopProducts
   );
+  const [selectedImage, setSelectedImage] = useState(
+    Array.isArray(productDetails?.image) && productDetails.image.length > 0
+      ? productDetails.image[productDetails.image.length - 1] // Set last image as default
+      : productDetails?.image
+  );
 
   const { cartItems } = useSelector((state) => state.shopCart);
   const { reviews } = useSelector((state) => state.shopReview);
@@ -39,6 +44,15 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const location = useLocation();
+
+  useEffect(() => {
+    if (
+      Array.isArray(productDetails?.image) &&
+      productDetails.image.length > 0
+    ) {
+      setSelectedImage(productDetails.image[productDetails.image.length - 1]);
+    }
+  }, [productDetails]);
 
   useEffect(() => {
     if (!open && searchParams.get("product")) {
@@ -56,42 +70,6 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
       ? reviews.reduce((sum, reviewItem) => sum + reviewItem.reviewValue, 0) /
         reviews.length
       : 0;
-
-  // function handleAddToCart(getCurrentProductId, getTotalStock) {
-  //   let getCartItems = cartItems.items || [];
-
-  //   if (getCartItems.length) {
-  //     const indexOfCurrentItem = getCartItems.findIndex(
-  //       (item) => item.productId === getCurrentProductId
-  //     );
-  //     if (indexOfCurrentItem > -1) {
-  //       const getQuantity = getCartItems[indexOfCurrentItem].quantity;
-
-  //       if (getQuantity + 1 > getTotalStock) {
-  //         toast({
-  //           title: `Only ${getQuantity} quantity can be added for this item`,
-  //           variant: "destructive",
-  //         });
-
-  //         return;
-  //       }
-  //     }
-  //   }
-  //   dispatch(
-  //     addToCart({
-  //       userId: user?.id,
-  //       productId: getCurrentProductId,
-  //       quantity: 1,
-  //     })
-  //   ).then((data) => {
-  //     if (data?.payload?.success) {
-  //       dispatch(fetchCartItems(user?.id));
-  //       toast({
-  //         title: "Product is added to cart",
-  //       });
-  //     }
-  //   });
-  // }
 
   const [selectedModels, setSelectedModels] = useState({});
   const models = productDetails?.models || [];
@@ -263,16 +241,42 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
 
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
-      <DialogContent className="bg-white p-4 sm:p-6 md:p-8 lg:p-12 max-w-[95vw] sm:max-w-[90vw] md:max-w-[80vw] lg:max-w-[70vw] max-h-[90vh] overflow-y-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 min-h-[calc(100vh-4rem)]">
-          <div className="relative overflow-hidden rounded-lg">
-            <img
-              src={productDetails?.image || "/placeholder.svg"}
-              alt={productDetails?.title}
-              width={600}
-              height={600}
-              className="aspect-square rounded-2xl w-full object-cover"
-            />
+      <DialogContent className="bg-white p-4 sm:p-6 md:p-8 lg:p-12 max-w-[95vw] sm:max-w-[90vw] md:max-w-[80vw] lg:max-w-[70vw] max-h-[90vh] overflow-y-auto ">
+        <DialogClose asChild>
+          <button className="absolute -top-1 right-1 text-red-600 hover:text-red-800 text-3xl sm:hidden">
+            <X className="w-8 h-8" />
+          </button>
+        </DialogClose>
+
+        <div className=" mt-4 sm:mt-0 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 min-h-[calc(100vh-4rem)]">
+          <div className="flex flex-col">
+            <div className="relative overflow-hidden rounded-lg">
+              <img
+                src={selectedImage || "/placeholder.svg"}
+                alt={productDetails?.title}
+                width={600}
+                height={600}
+                className="aspect-square rounded-2xl w-full object-cover"
+              />
+            </div>
+            <div className="flex justify-center mt-4 space-x-2">
+              {Array.isArray(productDetails?.image) &&
+                productDetails.image
+                  .slice(0, 5)
+                  .map((img, index) => (
+                    <img
+                      key={index}
+                      src={img}
+                      alt={`Thumbnail ${index + 1}`}
+                      className={`w-16 h-16 object-cover cursor-pointer rounded-md border ${
+                        img === selectedImage
+                          ? "border-blue-500"
+                          : "border-gray-300"
+                      }`}
+                      onClick={() => setSelectedImage(img)}
+                    />
+                  ))}
+            </div>
           </div>
           <div className="flex flex-col">
             <div>
@@ -283,10 +287,10 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
                 {productDetails?.description}
               </p>
               <label className="block text-gray-700 text-sm font-semibold mb-1">
-                {models.length > 0 ? "Select Model:" : "Model:"}
+                {models.length > 0 && "Select Model:"}
               </label>
 
-              {models.length > 0 ? (
+              {models.length > 0 && (
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -326,10 +330,6 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
                     ))}
                   </PopoverContent>
                 </Popover>
-              ) : (
-                <p className="p-2 border rounded-md bg-gray-100 text-gray-500">
-                  N/A
-                </p>
               )}
             </div>
             <div className="flex items-center justify-between">

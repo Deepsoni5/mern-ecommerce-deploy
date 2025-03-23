@@ -17,12 +17,16 @@ function ProductImageUpload({
   isCustomStyling = false,
 }) {
   const inputRef = useRef(null);
-
   function handleImageFileChange(event) {
-    const selectedFile = event.target.files?.[0];
-    if (selectedFile) {
-      setImageFile(selectedFile);
-    }
+    // Create an array with file selection order intact
+    const selectedFiles = Array.from(event.target.files);
+
+    // Store files in the order they were selected
+    setImageFile((prevFiles) => {
+      const updatedFiles = [...prevFiles, ...selectedFiles].slice(0, 5); // Limit to 5
+      // Log correct order
+      return updatedFiles;
+    });
   }
 
   function handleDragOver(event) {
@@ -31,39 +35,50 @@ function ProductImageUpload({
 
   function handleDrop(event) {
     event.preventDefault();
-    const droppedFile = event.dataTransfer.files?.[0];
+    const droppedFiles = Array.from(event.dataTransfer.files);
 
-    if (droppedFile) {
-      setImageFile(droppedFile);
+    if (droppedFiles.length > 0) {
+      setImageFile((prevFiles) => [...prevFiles, ...droppedFiles].slice(0, 5));
     }
   }
 
-  function handleRemoveImage() {
-    setImageFile(null);
-    if (inputRef.current) {
-      inputRef.current.value = "";
-    }
+  function handleRemoveImage(index) {
+    const updatedImages = [...imageFile];
+    updatedImages.splice(index, 1);
+    setImageFile(updatedImages);
   }
 
   async function uploadImageToCloudinary() {
     setImageLoadingState(true);
-    const data = new FormData();
 
-    data.append("my_file", imageFile);
+    const uploadedUrls = new Array(imageFile.length); // Maintain correct order
 
-    const response = await axios.post(
-      `${import.meta.env.VITE_API_URL}/api/admin/products/upload-image`,
-      data
-    );
+    const uploadPromises = imageFile.map(async (file, index) => {
+      const data = new FormData();
+      data.append("my_file", file);
 
-    if (response?.data?.success) {
-      setUploadedImageUrl(response.data?.result?.url);
-      setImageLoadingState(false);
-    }
+      try {
+        const response = await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/admin/products/upload-image`,
+          data
+        );
+
+        if (response?.data?.success) {
+          uploadedUrls[index] = response.data.result[0]; // Maintain order
+        }
+      } catch (error) {
+        console.error("Image upload failed:", error);
+      }
+    });
+
+    await Promise.all(uploadPromises); // Wait for all uploads
+
+    setUploadedImageUrl([...uploadedUrls]); // Ensure state update with correct order
+    setImageLoadingState(false);
   }
 
   useEffect(() => {
-    if (imageFile !== null) {
+    if (imageFile?.length > 0) {
       uploadImageToCloudinary();
     }
   }, [imageFile]);
@@ -83,34 +98,39 @@ function ProductImageUpload({
           type="file"
           className="hidden"
           ref={inputRef}
-          onChange={handleImageFileChange}
+          onInput={handleImageFileChange}
+          multiple
+          accept="image/*"
         />
 
-        {!imageFile ? (
+        {!imageFile?.length ? (
           <Label
             htmlFor="image-upload"
-            className={` flex flex-col items-center justify-center h-32 cursor-pointer`}
+            className="flex flex-col items-center justify-center h-32 cursor-pointer"
           >
             <UploadCloudIcon className="w-10 h-10 text-muted-foreground mb-2" />
-            <span>Drag & Drop or Click to upload image</span>
+            <span>Drag & Drop or Click to upload images</span>
           </Label>
         ) : imageLoadingState ? (
           <Skeleton className="h-10 bg-gray-300" />
         ) : (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <FileIcon className="w-8 h-8 text-primary mr-2" />
-            </div>
-            <p className="text-sm font-medium">{imageFile?.name}</p>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-muted-foreground hover:text-foreground"
-              onClick={handleRemoveImage}
-            >
-              <XIcon className="w-4 h-4" />
-              <span className="sr-only">Remove File</span>
-            </Button>
+          <div className="flex flex-wrap gap-2">
+            {imageFile.map((file, index) => (
+              <div key={index} className="relative">
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt="Preview"
+                  className="w-20 h-20 object-cover rounded"
+                />
+                <Button
+                  className="absolute top-0 right-0 p-1"
+                  size="icon"
+                  onClick={() => handleRemoveImage(index)}
+                >
+                  <XIcon className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
           </div>
         )}
       </div>

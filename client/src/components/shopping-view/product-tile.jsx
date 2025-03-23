@@ -109,7 +109,11 @@ function ShoppingProductTile({
       <div onClick={() => handleGetProductDetails(product?._id)}>
         <div className="mt-4 relative h-60 overflow-hidden">
           <img
-            src={product?.image}
+            src={
+              Array.isArray(product?.image)
+                ? product.image[product.image.length - 1]
+                : product?.image
+            }
             alt={product?.title}
             className="w-full h-full object-contain object-center transition-transform duration-300 ease-in-out hover:scale-105"
           />
