@@ -14,11 +14,12 @@ import {
 import { setProductDetails } from "@/store/shop/products-slice";
 import { Label } from "../ui/label";
 import StarRatingComponent from "../common/star-rating";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { addReview, getReviews } from "@/store/shop/review-slice";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import YouTube from "react-youtube";
+import Swipe from "react-easy-swipe";
 
 function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const dispatch = useDispatch();
@@ -248,6 +249,16 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
       });
   }
 
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  useEffect(() => {
+    if (open) {
+      setSelectedIndex(0);
+      setSelectedImage(productDetails?.image?.[0] || "/placeholder.svg");
+      setShowVideo(false);
+    }
+  }, [open, productDetails]);
+
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogContent className="bg-white p-4 sm:p-6 md:p-8 lg:p-12 max-w-[95vw] sm:max-w-[90vw] md:max-w-[80vw] lg:max-w-[70vw] max-h-[90vh] overflow-y-auto ">
@@ -259,15 +270,61 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
 
         <div className=" mt-4 sm:mt-0 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 min-h-[calc(100vh-4rem)]">
           <div className="flex flex-col">
-            <div className="relative overflow-hidden rounded-lg">
-              <img
-                src={selectedImage || "/placeholder.svg"}
-                alt={productDetails?.title}
-                width={600}
-                height={600}
-                className="aspect-square rounded-2xl w-full object-cover"
-              />
-            </div>
+            <Swipe
+              className="relative overflow-hidden rounded-lg cursor-pointer"
+              onSwipeLeft={() => {
+                if (selectedIndex < (productDetails?.image?.length || 1) - 1) {
+                  setSelectedIndex((prev) => prev + 1);
+                  setSelectedImage(productDetails.image[selectedIndex + 1]);
+                  setShowVideo(false); // Do NOT autoplay
+                }
+              }}
+              onSwipeRight={() => {
+                if (selectedIndex > 0) {
+                  setSelectedIndex((prev) => prev - 1);
+                  setSelectedImage(productDetails.image[selectedIndex - 1]);
+                  setShowVideo(false);
+                }
+              }}
+              preventDefaultTouchmoveEvent={true}
+              tolerance={10}
+            >
+              <div className="relative overflow-hidden rounded-lg cursor-pointer">
+                {/* Show image if video is not playing */}
+                <img
+                  src={selectedImage || "/placeholder.svg"}
+                  alt={productDetails?.title}
+                  width={600}
+                  height={600}
+                  className="aspect-square rounded-2xl w-full object-cover"
+                />
+
+                {/* Show Play Icon only on the last image */}
+                {selectedIndex === productDetails?.image.length - 1 &&
+                  productDetails.videoUrl &&
+                  !showVideo && (
+                    <div
+                      className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-md cursor-pointer"
+                      onClick={() => setShowVideo(true)}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="white"
+                        className="w-14 h-14"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M14.752 11.168l-5.197-3.016A1 1 0 008 8.02v7.96a1 1 0 001.555.832l5.197-3.016a1 1 0 000-1.664z"
+                        />
+                      </svg>
+                    </div>
+                  )}
+              </div>
+            </Swipe>
             <div className="flex justify-center mt-4 space-x-2">
               {Array.isArray(productDetails?.image) &&
                 productDetails.image.slice(0, 5).map((img, index) => (
