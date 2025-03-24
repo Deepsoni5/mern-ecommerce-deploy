@@ -29,6 +29,7 @@ const initialFormData = {
   salePrice: "",
   totalStock: "",
   averageReview: 0,
+  videoUrl: "",
 };
 
 function AdminProducts() {
@@ -81,6 +82,7 @@ function AdminProducts() {
           addNewProduct({
             ...formData,
             image: uploadedImageUrl,
+            videoUrl: formData.videoUrl || "",
             ...(formData.models &&
             formData.models.trim().toLowerCase() !== "n/a"
               ? {

@@ -35,6 +35,7 @@ const addProduct = async (req, res) => {
       salePrice,
       totalStock,
       models,
+      videoUrl,
     } = req.body;
 
     let formattedModels;
@@ -61,6 +62,7 @@ const addProduct = async (req, res) => {
       price,
       salePrice,
       totalStock,
+      videoUrl,
       ...(formattedModels && formattedModels.length > 0
         ? { models: formattedModels }
         : {}),

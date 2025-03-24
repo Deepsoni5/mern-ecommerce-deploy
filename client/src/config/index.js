@@ -115,6 +115,13 @@ export const addProductFormElements = [
     placeholder: "Enter total stock",
   },
   {
+    label: "YouTube Video Link",
+    name: "videoUrl",
+    componentType: "input",
+    type: "text",
+    placeholder: "Enter YouTube video link (optional)",
+  },
+  {
     label: "Available Models", // New Field for models
     name: "models",
     componentType: "input",

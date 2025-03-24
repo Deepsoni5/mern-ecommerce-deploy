@@ -102,7 +102,7 @@ export default function ShoppingFooter() {
             © {year} Raj Telecom. All rights reserved.
           </p>
           <p className="text-sm text-gray-600 mt-1">
-            Created by{" "}
+            Designed & Developed by{" "}
             <a
               href="https://www.instagram.com/deep.2531/"
               target="_blank"

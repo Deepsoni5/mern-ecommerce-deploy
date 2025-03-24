@@ -12,6 +12,7 @@ const ProductSchema = new mongoose.Schema(
     totalStock: Number,
     averageReview: Number,
     models: [String],
+    videoUrl: String,
   },
   { timestamps: true }
 );

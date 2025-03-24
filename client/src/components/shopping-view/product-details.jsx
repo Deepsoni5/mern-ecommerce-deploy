@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 import { addReview, getReviews } from "@/store/shop/review-slice";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import YouTube from "react-youtube";
 
 function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const dispatch = useDispatch();
@@ -30,9 +31,11 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   );
   const [selectedImage, setSelectedImage] = useState(
     Array.isArray(productDetails?.image) && productDetails.image.length > 0
-      ? productDetails.image[productDetails.image.length - 1] // Set last image as default
+      ? productDetails.image[0] // Set last image as default
       : productDetails?.image
   );
+
+  const [showVideo, setShowVideo] = useState(false);
 
   const { cartItems } = useSelector((state) => state.shopCart);
   const { reviews } = useSelector((state) => state.shopReview);
@@ -50,7 +53,7 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
       Array.isArray(productDetails?.image) &&
       productDetails.image.length > 0
     ) {
-      setSelectedImage(productDetails.image[productDetails.image.length - 1]);
+      setSelectedImage(productDetails.image[0]);
     }
   }, [productDetails]);
 
@@ -64,6 +67,12 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   useEffect(() => {
     if (productDetails !== null) dispatch(getReviews(productDetails?._id));
   }, [productDetails]);
+
+  const handleClose = (e) => {
+    if (e.target.id === "video-overlay") {
+      setShowVideo(false);
+    }
+  };
 
   const averageReview =
     reviews && reviews.length > 0
@@ -261,11 +270,9 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
             </div>
             <div className="flex justify-center mt-4 space-x-2">
               {Array.isArray(productDetails?.image) &&
-                productDetails.image
-                  .slice(0, 5)
-                  .map((img, index) => (
+                productDetails.image.slice(0, 5).map((img, index) => (
+                  <div key={index} className="relative">
                     <img
-                      key={index}
                       src={img}
                       alt={`Thumbnail ${index + 1}`}
                       className={`w-16 h-16 object-cover cursor-pointer rounded-md border ${
@@ -275,7 +282,32 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
                       }`}
                       onClick={() => setSelectedImage(img)}
                     />
-                  ))}
+
+                    {/* Show Play Icon on Last Image If Video Exists */}
+                    {index === productDetails.image.length - 1 &&
+                      productDetails.videoUrl && (
+                        <div
+                          className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-md cursor-pointer"
+                          onClick={() => setShowVideo(true)}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={2}
+                            stroke="white"
+                            className="w-10 h-10"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M14.752 11.168l-5.197-3.016A1 1 0 008 8.02v7.96a1 1 0 001.555.832l5.197-3.016a1 1 0 000-1.664z"
+                            />
+                          </svg>
+                        </div>
+                      )}
+                  </div>
+                ))}
             </div>
           </div>
           <div className="flex flex-col">
@@ -435,6 +467,38 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
               </div>
             </div>
           </div>
+          {showVideo && productDetails.videoUrl && (
+            <div
+              id="video-overlay"
+              className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50"
+              onClick={handleClose}
+            >
+              <div className="relative w-[90%] max-w-xl bg-black p-4 rounded-lg">
+                <button
+                  className="absolute -top-4 -right-4 text-white text-3xl"
+                  onClick={() => setShowVideo(false)}
+                >
+                  &times;
+                </button>
+
+                {/* Responsive YouTube Player */}
+                <div
+                  className="relative w-full"
+                  style={{ paddingTop: "56.25%" }}
+                >
+                  <YouTube
+                    videoId={productDetails.videoUrl}
+                    className="absolute top-0 left-0 w-full h-full"
+                    opts={{
+                      width: "100%",
+                      height: "100%",
+                      playerVars: { autoplay: 1 },
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

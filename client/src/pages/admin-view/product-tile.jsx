@@ -16,7 +16,7 @@ function AdminProductTile({
             <img
               src={
                 Array.isArray(product?.image)
-                  ? product.image[product.image.length - 1]
+                  ? product.image[0]
                   : product?.image
               }
               alt={product?.title}
