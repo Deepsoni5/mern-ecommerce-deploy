@@ -18,14 +18,11 @@ function ProductImageUpload({
 }) {
   const inputRef = useRef(null);
   function handleImageFileChange(event) {
-    // Create an array with file selection order intact
     const selectedFiles = Array.from(event.target.files);
 
-    // Store files in the order they were selected
     setImageFile((prevFiles) => {
-      const updatedFiles = [...prevFiles, ...selectedFiles].slice(0, 5); // Limit to 5
-      // Log correct order
-      return updatedFiles;
+      const safePrevFiles = Array.isArray(prevFiles) ? prevFiles : []; // ✅ Fallback to empty array
+      return [...safePrevFiles, ...selectedFiles].slice(0, 5);
     });
   }
 

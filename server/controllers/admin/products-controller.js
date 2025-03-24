@@ -114,7 +114,8 @@ const editProduct = async (req, res) => {
       price,
       salePrice,
       totalStock,
-      models, // Add models to the destructured fields
+      models,
+      videoUrl, // Add models to the destructured fields
     } = req.body;
 
     let findProduct = await Product.findById(id);
@@ -135,10 +136,18 @@ const editProduct = async (req, res) => {
       salePrice === "" ? 0 : salePrice || findProduct.salePrice;
     findProduct.totalStock = totalStock || findProduct.totalStock;
     findProduct.image = image || findProduct.image;
+    findProduct.videoUrl = videoUrl || findProduct.videoUrl;
 
     // Update the models field if it exists in the request
     if (models) {
-      findProduct.models = models; // Ensure models is an array
+      findProduct.models = Array.isArray(models)
+        ? models.map((model) => model.trim()).filter(Boolean)
+        : typeof models === "string"
+        ? models
+            .split(",")
+            .map((model) => model.trim())
+            .filter(Boolean)
+        : findProduct.models; // If nothing, keep the old value
     }
 
     // Save the updated product
