@@ -20,7 +20,7 @@ import { useDispatch, useSelector } from "react-redux";
 import AdminProductTile from "./product-tile";
 
 const initialFormData = {
-  image: null,
+  image: [],
   title: "",
   description: "",
   category: "",
@@ -55,11 +55,10 @@ function AdminProducts() {
             formData: {
               ...formData,
               image: uploadedImageUrl,
-              ...(formData.models &&
-              formData.models.trim().toLowerCase() !== "n/a"
+              videoUrl: formData.videoUrl || "",
+              ...(Array.isArray(formData.models) && formData.models.length > 0
                 ? {
                     models: formData.models
-                      .split(",")
                       .map((model) => model.trim())
                       .filter(Boolean),
                   }
